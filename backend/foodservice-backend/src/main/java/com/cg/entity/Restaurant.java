@@ -34,7 +34,7 @@ public class Restaurant {
      * Mapped by the restaurant_id FK in the MenuItems table.
      */
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<MenuItem> menuItems = new ArrayList<>();
+    private List<MenuItems> menuItems = new ArrayList<>();
 
     /**
      * One Restaurant → Many Orders
@@ -63,13 +63,13 @@ public class Restaurant {
     // ─── Convenience helpers ──────────────────────────────────────────────────
 
     /** Keeps the bi-directional link consistent when adding a menu item. */
-    public void addMenuItem(MenuItem item) {
+    public void addMenuItem(MenuItems item) {
         item.setRestaurant(this);
         this.menuItems.add(item);
     }
 
     /** Keeps the bi-directional link consistent when removing a menu item. */
-    public void removeMenuItem(MenuItem item) {
+    public void removeMenuItem(MenuItems item) {
         item.setRestaurant(null);
         this.menuItems.remove(item);
     }
@@ -88,8 +88,8 @@ public class Restaurant {
     public String getRestaurantPhone() { return restaurantPhone; }
     public void setRestaurantPhone(String restaurantPhone) { this.restaurantPhone = restaurantPhone; }
 
-    public List<MenuItem> getMenuItems() { return menuItems; }
-    public void setMenuItems(List<MenuItem> menuItems) { this.menuItems = menuItems; }
+    public List<MenuItems> getMenuItems() { return menuItems; }
+    public void setMenuItems(List<MenuItems> menuItems) { this.menuItems = menuItems; }
 
     public List<Order> getOrders() { return orders; }
     public void setOrders(List<Order> orders) { this.orders = orders; }
