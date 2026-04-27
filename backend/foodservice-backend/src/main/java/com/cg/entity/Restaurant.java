@@ -15,13 +15,11 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "Restaurants")
 public class Restaurant {
 
     // ─── Primary Key ──────────────────────────────────────────────────────────
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "restaurant_id")
     private Integer restaurantId;
 
