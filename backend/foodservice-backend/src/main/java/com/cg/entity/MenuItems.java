@@ -19,7 +19,7 @@ public class MenuItems {
 
     private String itemName;
     private String itemDescription;
-    private double itemPrice;
+    private Double itemPrice;
 
     @ManyToOne
     @JoinColumn(name = "restaurant_id")
@@ -52,11 +52,11 @@ public class MenuItems {
 		this.itemDescription = itemDescription;
 	}
 
-	public double getItemPrice() {
+	public Double getItemPrice() {
 		return itemPrice;
 	}
 
-	public void setItemPrice(double itemPrice) {
+	public void setItemPrice(Double itemPrice) {
 		this.itemPrice = itemPrice;
 	}
 

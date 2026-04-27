@@ -1,26 +1,31 @@
 package com.cg.entity;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 
 @Entity
 public class Coupons {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	Integer couponId;
+	private Integer couponId;
 	
 	@Column(unique = true)
-	String couponCode;
+	private String couponCode;
 
-	Double discountAmount;
+	private Double discountAmount;
 	
-	LocalDate expiryDate;
+	private LocalDate expiryDate;
+	
+	@ManyToMany(mappedBy = "coupons")
+	private Set<Order> orders;
 
 	public Integer getCouponId() {
 		return couponId;
