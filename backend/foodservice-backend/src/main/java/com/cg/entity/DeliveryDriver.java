@@ -13,47 +13,48 @@ public class DeliveryDriver {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer driver_id;
+	private Integer driverId;
 	
-	private String driver_name;
+	private String driverName;
 	
-	private String driver_phone;
+	private String driverPhone;
 	
-	private String driver_vehicle;
+	private String driverVehicle;
 	
 	@OneToMany(mappedBy = "deliveryDriver")
     private Set<Order> assignedOrders;
 
-	public Integer getDriver_id() {
-		return driver_id;
+
+	public Integer getDriverId() {
+		return driverId;
 	}
 
-	public void setDriver_id(Integer driver_id) {
-		this.driver_id = driver_id;
+	public void setDriverId(Integer driverId) {
+		this.driverId = driverId;
 	}
 
-	public String getDriver_name() {
-		return driver_name;
+	public String getDriverName() {
+		return driverName;
 	}
 
-	public void setDriver_name(String driver_name) {
-		this.driver_name = driver_name;
+	public void setDriverName(String driverName) {
+		this.driverName = driverName;
 	}
 
-	public String getDriver_phone() {
-		return driver_phone;
+	public String getDriverPhone() {
+		return driverPhone;
 	}
 
-	public void setDriver_phone(String driver_phone) {
-		this.driver_phone = driver_phone;
+	public void setDriverPhone(String driverPhone) {
+		this.driverPhone = driverPhone;
 	}
 
-	public String getDriver_vehicle() {
-		return driver_vehicle;
+	public String getDriverVehicle() {
+		return driverVehicle;
 	}
 
-	public void setDriver_vehicle(String driver_vehicle) {
-		this.driver_vehicle = driver_vehicle;
+	public void setDriverVehicle(String driverVehicle) {
+		this.driverVehicle = driverVehicle;
 	}
 
 	public Set<Order> getAssignedOrders() {

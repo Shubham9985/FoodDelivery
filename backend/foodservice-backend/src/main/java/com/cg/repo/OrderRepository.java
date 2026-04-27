@@ -1,9 +1,10 @@
 package com.cg.repo;
 
-import com.cg.entity.Order;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
+import com.cg.entity.Order;
 
 public interface OrderRepository extends JpaRepository<Order, Integer> {
     List<Order> findByCustomerCustomerId(Integer customerId);
