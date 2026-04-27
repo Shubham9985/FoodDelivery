@@ -24,7 +24,7 @@ public class DeliveryAddress {
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
-	public int getAddressId() {
+	public Integer getAddressId() {
 		return addressId;
 	}
 
