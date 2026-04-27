@@ -21,7 +21,6 @@ public class Restaurant {
     // ─── Primary Key ──────────────────────────────────────────────────────────
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "restaurant_id")
     private Integer restaurantId;
 
