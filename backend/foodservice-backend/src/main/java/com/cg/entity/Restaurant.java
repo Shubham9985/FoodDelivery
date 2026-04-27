@@ -15,7 +15,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "Restaurants")
 public class Restaurant {
 
     // ─── Primary Key ──────────────────────────────────────────────────────────
