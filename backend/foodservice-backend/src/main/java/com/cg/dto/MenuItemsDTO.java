@@ -50,15 +50,7 @@ public class MenuItemsDTO {
         public Integer getRestaurantId() { return restaurantId; }
         public void setRestaurantId(Integer restaurantId) { this.restaurantId = restaurantId; }
 
-        @Override
-        public String toString() {
-            return "MenuItemsDTO.Request{" +
-                   "itemName='" + itemName + '\'' +
-                   ", itemDescription='" + itemDescription + '\'' +
-                   ", itemPrice=" + itemPrice +
-                   ", restaurantId=" + restaurantId +
-                   '}';
-        }
+        
     }
 
     // =========================================================================
