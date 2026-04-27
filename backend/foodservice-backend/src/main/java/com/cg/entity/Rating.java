@@ -12,9 +12,10 @@ public class Rating {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int ratingId;
+    private Integer ratingId;
 
-    private int rating;
+    private Integer rating;
+    
     private String review;
 
     @ManyToOne
@@ -25,19 +26,19 @@ public class Rating {
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
 
-	public int getRatingId() {
+	public Integer getRatingId() {
 		return ratingId;
 	}
 
-	public void setRatingId(int ratingId) {
+	public void setRatingId(Integer ratingId) {
 		this.ratingId = ratingId;
 	}
 
-	public int getRating() {
+	public Integer getRating() {
 		return rating;
 	}
 
-	public void setRating(int rating) {
+	public void setRating(Integer rating) {
 		this.rating = rating;
 	}
 

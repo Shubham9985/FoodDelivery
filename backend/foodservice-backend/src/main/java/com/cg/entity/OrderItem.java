@@ -11,9 +11,9 @@ import jakarta.persistence.Table;
 public class OrderItem {
 	
     @Id
-    private int orderItemId;
+    private Integer orderItemId;
     
-    private int quantity;
+    private Integer quantity;
     
     @ManyToOne
     @JoinColumn(name = "order_id")
@@ -23,11 +23,11 @@ public class OrderItem {
     @JoinColumn(name = "item_id")
     private MenuItems menuItem;
 
-	public int getOrderItemId() {
+	public Integer getOrderItemId() {
 		return orderItemId;
 	}
 
-	public void setOrderItemId(int orderItemId) {
+	public void setOrderItemId(Integer orderItemId) {
 		this.orderItemId = orderItemId;
 	}
 
@@ -35,7 +35,7 @@ public class OrderItem {
 		return quantity;
 	}
 
-	public void setQuantity(int quantity) {
+	public void setQuantity(Integer quantity) {
 		this.quantity = quantity;
 	}
 

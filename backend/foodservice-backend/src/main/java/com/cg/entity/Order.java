@@ -11,7 +11,7 @@ import jakarta.persistence.ManyToOne;
 public class Order {
 
     @Id
-    private int orderId;
+    private Integer orderId;
     
     private LocalDateTime orderDate;
     
@@ -28,10 +28,10 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "delivery_driver_id")
     private DeliveryDriver deliveryDriver;
-	public int getOrderId() {
+	public Integer getOrderId() {
 		return orderId;
 	}
-	public void setOrderId(int orderId) {
+	public void setOrderId(Integer orderId) {
 		this.orderId = orderId;
 	}
 	public LocalDateTime getOrderDate() {
