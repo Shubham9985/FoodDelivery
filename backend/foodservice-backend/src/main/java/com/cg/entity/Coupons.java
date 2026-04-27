@@ -13,16 +13,13 @@ public class Coupons {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "coupon_id")
 	Integer couponId;
 	
-	@Column(unique = true, name = "coupon_code")
+	@Column(unique = true)
 	String couponCode;
 
-	@Column(name = "discount_amount")
 	Double discountAmount;
 	
-	@Column(name = "expiry_date")
 	LocalDate expiryDate;
 
 	public Integer getCouponId() {
