@@ -1,7 +1,7 @@
 package com.cg.entity;
 
 import java.time.LocalDate;
-import java.util.Set;
+import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,10 +22,11 @@ public class Coupons {
 
 	private Double discountAmount;
 	
+	@Column(name = "expiry_date")
 	private LocalDate expiryDate;
-	
+
 	@ManyToMany(mappedBy = "coupons")
-	private Set<Order> orders;
+	private List<Order> orders;
 
 	public Integer getCouponId() {
 		return couponId;
@@ -58,6 +59,4 @@ public class Coupons {
 	public void setExpiryDate(LocalDate expiryDate) {
 		this.expiryDate = expiryDate;
 	}
-	
-	
 }
