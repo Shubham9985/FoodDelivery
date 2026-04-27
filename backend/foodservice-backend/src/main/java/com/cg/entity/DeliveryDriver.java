@@ -21,7 +21,7 @@ public class DeliveryDriver {
 	
 	private String driver_vehicle;
 	
-	@OneToMany(mappedBy = "driver")
+	@OneToMany(mappedBy = "deliveryDriver")
     private Set<Order> assignedOrders;
 
 	public Integer getDriver_id() {
