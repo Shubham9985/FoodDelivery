@@ -12,7 +12,7 @@ public class DeliveryAddress {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int addressId;
+    private Integer addressId;
 
     private String addressLine1;
     private String addressLine2;
