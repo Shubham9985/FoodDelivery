@@ -1,4 +1,6 @@
 package com.cg.dto;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Min;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
