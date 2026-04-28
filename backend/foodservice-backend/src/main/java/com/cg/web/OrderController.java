@@ -1,12 +1,13 @@
 package com.cg.web;
 
 import com.cg.dto.OrderDTO;
+
 import com.cg.dto.OrderResponseDTO;
 import com.cg.service.OrderService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
+import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -17,7 +18,7 @@ public class OrderController {
     private OrderService orderService;
 
     @PostMapping
-    public OrderResponseDTO createOrder(@RequestBody OrderDTO dto) {
+    public OrderResponseDTO createOrder(@Valid @RequestBody OrderDTO dto) {
         return orderService.createOrder(dto);
     }
 
