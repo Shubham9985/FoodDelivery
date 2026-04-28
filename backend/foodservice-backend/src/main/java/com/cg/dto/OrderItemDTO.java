@@ -1,9 +1,12 @@
 package com.cg.dto;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Min;
+<<<<<<< HEAD
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+=======
+>>>>>>> bad4a5a (validation order)
 
 public class OrderItemDTO {
 
