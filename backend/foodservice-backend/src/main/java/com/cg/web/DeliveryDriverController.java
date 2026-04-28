@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import com.cg.dto.DeliveryDriverDTO;
 import com.cg.service.DeliveryDriverService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/drivers")
 public class DeliveryDriverController {
@@ -18,7 +20,7 @@ public class DeliveryDriverController {
 
     // CREATE
     @PostMapping
-    public ResponseEntity<DeliveryDriverDTO> createDriver(@RequestBody DeliveryDriverDTO dto) {
+    public ResponseEntity<DeliveryDriverDTO> createDriver(@Valid @RequestBody DeliveryDriverDTO dto) {
         return ResponseEntity.ok(driverService.createDriver(dto));
     }
 
@@ -38,7 +40,7 @@ public class DeliveryDriverController {
     @PutMapping("/{id}")
     public ResponseEntity<DeliveryDriverDTO> updateDriver(
             @PathVariable Integer id,
-            @RequestBody DeliveryDriverDTO dto) {
+            @Valid @RequestBody DeliveryDriverDTO dto) {
         return ResponseEntity.ok(driverService.updateDriver(id, dto));
     }
 

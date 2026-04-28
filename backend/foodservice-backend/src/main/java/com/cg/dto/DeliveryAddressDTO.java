@@ -1,13 +1,24 @@
 package com.cg.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 public class DeliveryAddressDTO {
 
     private Integer addressId;
+    
+    @NotBlank(message = "Address Line 1 is required")
+    @Size(min = 5, max = 100, message = "Address must be between 5 and 100 characters")
     private String addressLine1;
     private String addressLine2;
+    
+    @NotBlank(message = "City is required")
     private String city;
+    @NotBlank(message = "State is required")
     private String state;
+    @NotBlank(message = "Postal code is required")
+    @Pattern(regexp = "^[0-9]{6}$", message = "Postal code must be 6 digits")
     private String postalCode;
 
     private Integer customerId;
