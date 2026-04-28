@@ -13,14 +13,17 @@ import com.cg.dto.OrderResponseDTO;
 import com.cg.entity.Coupons;
 import com.cg.entity.Order;
 import com.cg.entity.OrderItem;
+import com.cg.repo.CouponsRepository;
 import com.cg.repo.CustomerRepository;
 import com.cg.repo.DeliveryDriverRepository;
 import com.cg.repo.MenuItemsRepository;
-import com.cg.repo.OrderItemRepository;
 import com.cg.repo.OrderRepository;
 import com.cg.repo.RestaurantRepository;
 
+import jakarta.transaction.Transactional;
+
 @Service
+@Transactional
 public class OrderServiceImpl implements OrderService {
 
 	@Autowired
@@ -33,7 +36,7 @@ public class OrderServiceImpl implements OrderService {
 	private DeliveryDriverRepository driverRepo;
 
 	@Autowired
-	private CouponRepository couponRepo;
+	private CouponsRepository couponRepo;
 
 	@Autowired
 	private MenuItemsRepository menuRepo;
@@ -44,39 +47,41 @@ public class OrderServiceImpl implements OrderService {
 
 	@Override
 	public OrderResponseDTO createOrder(OrderDTO dto) {
-		Order order = new Order();
-		order.setOrderStatus(dto.getOrderStatus());
-		order.setOrderDate(dto.getOrderDate());
-		order.setCustomer(customerRepo.findById(dto.getCustomerId()).orElseThrow());
-		order.setRestaurant(restaurantRepo.findById(dto.getRestaurantId()).orElseThrow());
-		order.setDeliveryDriver(driverRepo.findById(dto.getDeliveryDriverId()).orElseThrow());
 
-		if (dto.getCouponIds() != null) {
-			Set<Coupons> coupon = dto.getCouponIds().stream().map(id -> couponRepo.findById(id).orElseThrow())
-					.collect(Collectors.toSet());
-			order.setCoupons(coupon);
+	    Order order = new Order();
 
-		}
+	    order.setOrderStatus(dto.getOrderStatus());
+	    order.setOrderDate(dto.getOrderDate());
 
-		Set<OrderItem> items = dto.getItems().stream().map(i -> {
-			OrderItem item = new OrderItem();
-			item.setQuantity(i.getQuantity());
-			item.setMenuItem(menuRepo.findById(i.getItemId()).orElseThrow());
-			item.setOrder(order);
-			return item;
-		}).collect(Collectors.toSet());
+	    order.setCustomer(customerRepo.findById(dto.getCustomerId()).orElseThrow());
+	    order.setRestaurant(restaurantRepo.findById(dto.getRestaurantId()).orElseThrow());
 
-		order.setOrderItems(items);
+	    if (dto.getDeliveryDriverId() != null) {
+	        order.setDeliveryDriver(driverRepo.findById(dto.getDeliveryDriverId()).orElseThrow());
+	    }
 
-		Order saved = orderRepo.save(order);
+	    if (dto.getCouponIds() != null) {
+	        Set<Coupons> coupon = dto.getCouponIds().stream()
+	                .map(id -> couponRepo.findById(id).orElseThrow())
+	                .collect(Collectors.toSet());
+	        order.setCoupons(coupon);
+	    }
 
-		OrderResponseDTO orderDto = new OrderResponseDTO();
-		dto.setOrderId(order.getOrderId());
-		dto.setOrderStatus(order.getOrderStatus());
-		dto.setOrderDate(order.getOrderDate());
-		dto.setCustomerId(order.getCustomer().getCustomerId());
-		dto.setRestaurantId(order.getRestaurant().getRestaurantId());
+	    if (dto.getItems() != null) {
+	        Set<OrderItem> items = dto.getItems().stream().map(i -> {
+	            OrderItem item = new OrderItem();
+	            item.setQuantity(i.getQuantity());
+	            item.setMenuItem(menuRepo.findById(i.getItemId()).orElseThrow());
+	            item.setOrder(order);
+	            return item;
+	        }).collect(Collectors.toSet());
 
+	        order.setOrderItems(items);
+	    }
+
+	    Order savedOrder = orderRepo.save(order);
+
+	    return mapToDTO(savedOrder);
 	}
 
 	@Override
