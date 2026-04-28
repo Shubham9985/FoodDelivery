@@ -4,22 +4,17 @@ import java.util.List;
 
 public class RestaurantResponseDTO {
 
-    // ─── Direct fields from Restaurant entity ─────────────────────────────────
 
-    private Integer restaurantId;       // included in response, not in request
+    private Integer restaurantId;       
     private String  restaurantName;
     private String  restaurantAddress;
     private String  restaurantPhone;
 
-    // ─── Relationships exposed as ID lists ────────────────────────────────────
-    // Matches your entity's: List<MenuItems>, List<Order>, List<Rating>
-    // Sent as IDs only — prevents Jackson infinite recursion on bidirectional refs
 
-    private List<Integer> menuItemIds;  // from List<MenuItems>
-    private List<Integer> orderIds;     // from List<Order>
-    private List<Integer> ratingIds;    // from List<Rating>
+    private List<Integer> menuItemIds;  
+    private List<Integer> orderIds;     
+    private List<Integer> ratingIds;    
 
-    // ─── Constructors ─────────────────────────────────────────────────────────
 
     public RestaurantResponseDTO() {}
 
@@ -39,7 +34,6 @@ public class RestaurantResponseDTO {
         this.ratingIds         = ratingIds;
     }
 
-    // ─── Getters & Setters ────────────────────────────────────────────────────
 
     public Integer getRestaurantId() { return restaurantId; }
     public void setRestaurantId(Integer restaurantId) { this.restaurantId = restaurantId; }
