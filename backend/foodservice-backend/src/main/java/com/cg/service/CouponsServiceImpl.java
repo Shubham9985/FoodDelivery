@@ -7,6 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.cg.entity.Coupons;
+import com.cg.exceptions.CouponCodeNotFoundException;
+import com.cg.exceptions.CouponException;
+import com.cg.exceptions.DuplicateDataException;
+import com.cg.exceptions.IdNotFoundException;
 import com.cg.repo.CouponsRepository;
 
 @Service
@@ -20,12 +24,12 @@ public class CouponsServiceImpl implements CouponsService {
 
         // Duplicate check
         if (couponsRepository.existsByCouponCode(coupon.getCouponCode())) {
-            throw new RuntimeException("Coupon code already exists");
+            throw new DuplicateDataException("Coupon code already exists");
         }
 
         // Expiry validation
         if (coupon.getExpiryDate().isBefore(LocalDate.now())) {
-            throw new RuntimeException("Cannot add expired coupon");
+            throw new CouponException("Cannot add expired coupon");
         }
 
         return couponsRepository.save(coupon);
@@ -34,13 +38,13 @@ public class CouponsServiceImpl implements CouponsService {
     @Override
     public Coupons getCouponById(Integer couponId) {
         return couponsRepository.findById(couponId)
-                .orElseThrow(() -> new RuntimeException("Coupon not found"));
+                .orElseThrow(() -> new IdNotFoundException("Coupon not found"));
     }
 
     @Override
     public Coupons getCouponByCode(String couponCode) {
         return couponsRepository.findByCouponCode(couponCode)
-                .orElseThrow(() -> new RuntimeException("Coupon not found"));
+                .orElseThrow(() -> new CouponCodeNotFoundException("Coupon not found"));
     }
 
     @Override
@@ -56,12 +60,12 @@ public class CouponsServiceImpl implements CouponsService {
         // Prevent duplicate on update
         if (!existing.getCouponCode().equals(coupon.getCouponCode()) &&
             couponsRepository.existsByCouponCode(coupon.getCouponCode())) {
-            throw new RuntimeException("Coupon code already exists");
+            throw new DuplicateDataException("Coupon code already exists");
         }
 
         // Expiry validation
         if (coupon.getExpiryDate().isBefore(LocalDate.now())) {
-            throw new RuntimeException("Cannot set expired coupon");
+            throw new CouponException("Cannot set expired coupon");
         }
 
         existing.setCouponCode(coupon.getCouponCode());
@@ -80,7 +84,7 @@ public class CouponsServiceImpl implements CouponsService {
     @Override
     public Double applyCoupon(String code, Double orderAmount) {
     	Coupons coupon = couponsRepository.findByCouponCode(code)
-                .orElseThrow(() -> new RuntimeException("Invalid coupon code"));
+                .orElseThrow(() -> new CouponCodeNotFoundException("Invalid coupon code"));
 
         if (coupon.getExpiryDate().isBefore(LocalDate.now())) {
             throw new RuntimeException("Coupon expired");

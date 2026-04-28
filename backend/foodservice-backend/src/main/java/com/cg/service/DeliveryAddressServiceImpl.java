@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.cg.dto.DeliveryAddressDTO;
 import com.cg.entity.Customer;
 import com.cg.entity.DeliveryAddress;
+import com.cg.exceptions.IdNotFoundException;
 import com.cg.repo.CustomerRepository;
 import com.cg.repo.DeliveryAddressRepository;
 import com.cg.service.DeliveryAddressService;
@@ -29,7 +30,7 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
 
         if (dto.getCustomerId() != null) {
             Customer customer = customerRepo.findById(dto.getCustomerId())
-                    .orElseThrow(() -> new RuntimeException("Customer not found"));
+                    .orElseThrow(() -> new IdNotFoundException("Customer not found"));
             address.setCustomer(customer);
         }
 
@@ -50,7 +51,7 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
     @Override
     public DeliveryAddressDTO getAddressById(Integer id) {
         DeliveryAddress address = addressRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Address not found"));
+                .orElseThrow(() -> new IdNotFoundException("Address not found"));
         return mapToDTO(address);
     }
 
@@ -58,7 +59,7 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
     @Override
     public DeliveryAddressDTO updateAddress(Integer id, DeliveryAddressDTO dto) {
         DeliveryAddress existing = addressRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Address not found"));
+                .orElseThrow(() -> new IdNotFoundException("Address not found"));
 
         existing.setAddressLine1(dto.getAddressLine1());
         existing.setAddressLine2(dto.getAddressLine2());
@@ -74,7 +75,7 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
     @Override
     public void deleteAddress(Integer id) {
         if (!addressRepo.existsById(id)) {
-            throw new RuntimeException("Address not found");
+            throw new IdNotFoundException("Address not found");
         }
         addressRepo.deleteById(id);
     }
@@ -92,10 +93,10 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
     @Override
     public DeliveryAddressDTO assignToCustomer(Integer addressId, Integer customerId) {
         DeliveryAddress address = addressRepo.findById(addressId)
-                .orElseThrow(() -> new RuntimeException("Address not found"));
+                .orElseThrow(() -> new IdNotFoundException("Address not found"));
 
         Customer customer = customerRepo.findById(customerId)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> new IdNotFoundException("Customer not found"));
 
         address.setCustomer(customer);
 

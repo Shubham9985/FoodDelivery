@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.cg.dto.DeliveryDriverDTO;
 import com.cg.entity.DeliveryDriver;
+import com.cg.exceptions.IdNotFoundException;
 import com.cg.repo.DeliveryDriverRepository;
 import com.cg.service.DeliveryDriverService;
 
@@ -39,7 +40,7 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
     @Override
     public DeliveryDriverDTO getDriverById(Integer id) {
         DeliveryDriver driver = driverRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Driver not found"));
+                .orElseThrow(() -> new IdNotFoundException("Driver not found"));
         return mapToDTO(driver);
     }
 
@@ -47,7 +48,7 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
     @Override
     public DeliveryDriverDTO updateDriver(Integer id, DeliveryDriverDTO dto) {
         DeliveryDriver existing = driverRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Driver not found"));
+                .orElseThrow(() -> new IdNotFoundException("Driver not found"));
 
         existing.setDriverName(dto.getDriverName());
         existing.setDriverPhone(dto.getDriverPhone());
@@ -61,7 +62,7 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
     @Override
     public void deleteDriver(Integer id) {
         if (!driverRepo.existsById(id)) {
-            throw new RuntimeException("Driver not found");
+            throw new IdNotFoundException("Driver not found");
         }
         driverRepo.deleteById(id);
     }

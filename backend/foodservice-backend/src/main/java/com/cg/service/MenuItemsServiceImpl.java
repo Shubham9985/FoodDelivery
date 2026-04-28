@@ -3,6 +3,8 @@ package com.cg.service;
 import com.cg.dto.MenuItemsDTO;
 import com.cg.entity.MenuItems;
 import com.cg.entity.Restaurant;
+import com.cg.exceptions.IdNotFoundException;
+import com.cg.exceptions.NameNotFoundException;
 import com.cg.repo.MenuItemsRepository;
 import com.cg.repo.RestaurantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,7 +76,7 @@ public class MenuItemsServiceImpl implements MenuItemsService {
 
         if (dto.getRestaurantId() != null) {
             Restaurant restaurant = restaurantRepository.findById(dto.getRestaurantId())
-                    .orElseThrow(() -> new RuntimeException(
+                    .orElseThrow(() -> new IdNotFoundException(
                             "Restaurant not found with ID: " + dto.getRestaurantId()));
             item.setRestaurant(restaurant);
         }
@@ -98,7 +100,7 @@ public class MenuItemsServiceImpl implements MenuItemsService {
     @Transactional(readOnly = true)
     public MenuItemsDTO.Response getMenuItemById(Integer itemId) {
         MenuItems item = menuItemsRepository.findById(itemId)
-                .orElseThrow(() -> new RuntimeException("Menu item not found with ID: " + itemId));
+                .orElseThrow(() -> new IdNotFoundException("Menu item not found with ID: " + itemId));
         return toResponseDTO(item);
     }
 
@@ -114,7 +116,7 @@ public class MenuItemsServiceImpl implements MenuItemsService {
     @Override
     public MenuItemsDTO.Response updateMenuItem(Integer itemId, MenuItemsDTO.Request requestDTO) {
         MenuItems existing = menuItemsRepository.findById(itemId)
-                .orElseThrow(() -> new RuntimeException("Menu item not found with ID: " + itemId));
+                .orElseThrow(() -> new IdNotFoundException("Menu item not found with ID: " + itemId));
 
         existing.setItemName(requestDTO.getItemName());
         existing.setItemDescription(requestDTO.getItemDescription());
@@ -123,7 +125,7 @@ public class MenuItemsServiceImpl implements MenuItemsService {
         // Re-assign restaurant if restaurantId changed
         if (requestDTO.getRestaurantId() != null) {
             Restaurant restaurant = restaurantRepository.findById(requestDTO.getRestaurantId())
-                    .orElseThrow(() -> new RuntimeException(
+                    .orElseThrow(() -> new IdNotFoundException(
                             "Restaurant not found with ID: " + requestDTO.getRestaurantId()));
             existing.setRestaurant(restaurant);
         }
@@ -135,7 +137,7 @@ public class MenuItemsServiceImpl implements MenuItemsService {
     @Override
     public void deleteMenuItem(Integer itemId) {
         if (!menuItemsRepository.existsById(itemId)) {
-            throw new RuntimeException("Menu item not found with ID: " + itemId);
+            throw new IdNotFoundException("Menu item not found with ID: " + itemId);
         }
         menuItemsRepository.deleteById(itemId);
     }
@@ -148,7 +150,7 @@ public class MenuItemsServiceImpl implements MenuItemsService {
     @Transactional(readOnly = true)
     public MenuItemsDTO.Response getMenuItemByName(String itemName) {
         MenuItems item = menuItemsRepository.findByItemName(itemName)
-                .orElseThrow(() -> new RuntimeException("Menu item not found with name: " + itemName));
+                .orElseThrow(() -> new NameNotFoundException("Menu item not found with name: " + itemName));
         return toResponseDTO(item);
     }
 
@@ -269,7 +271,7 @@ public class MenuItemsServiceImpl implements MenuItemsService {
     @Transactional(readOnly = true)
     public MenuItemsDTO.Response getMostExpensiveMenuItemByRestaurant(Integer restaurantId) {
         MenuItems item = menuItemsRepository.findMostExpensiveByRestaurantId(restaurantId)
-                .orElseThrow(() -> new RuntimeException(
+                .orElseThrow(() -> new IdNotFoundException(
                         "No menu items found for restaurant ID: " + restaurantId));
         return toResponseDTO(item);
     }
@@ -278,7 +280,7 @@ public class MenuItemsServiceImpl implements MenuItemsService {
     @Transactional(readOnly = true)
     public MenuItemsDTO.Response getCheapestMenuItemByRestaurant(Integer restaurantId) {
         MenuItems item = menuItemsRepository.findCheapestByRestaurantId(restaurantId)
-                .orElseThrow(() -> new RuntimeException(
+                .orElseThrow(() -> new IdNotFoundException(
                         "No menu items found for restaurant ID: " + restaurantId));
         return toResponseDTO(item);
     }
@@ -296,7 +298,7 @@ public class MenuItemsServiceImpl implements MenuItemsService {
     @Transactional(readOnly = true)
     public MenuItemsDTO.Response getMenuItemByOrderItemId(Integer orderItemId) {
         MenuItems item = menuItemsRepository.findByOrderItemId(orderItemId)
-                .orElseThrow(() -> new RuntimeException(
+                .orElseThrow(() -> new IdNotFoundException(
                         "No menu item found for order item ID: " + orderItemId));
         return toResponseDTO(item);
     }
