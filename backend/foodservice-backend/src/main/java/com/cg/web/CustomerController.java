@@ -11,6 +11,8 @@ import com.cg.dto.CustomerDTO;
 import com.cg.dto.DeliveryAddressDTO;
 import com.cg.service.CustomerService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/customers")
 public class CustomerController {
@@ -20,7 +22,7 @@ public class CustomerController {
 
     // CREATE
     @PostMapping
-    public ResponseEntity<CustomerDTO> createCustomer(@RequestBody CustomerDTO dto) {
+    public ResponseEntity<CustomerDTO> createCustomer(@Valid @RequestBody CustomerDTO dto) {
         return ResponseEntity.ok(customerService.createCustomer(dto));
     }
 
@@ -40,7 +42,7 @@ public class CustomerController {
     @PutMapping("/{id}")
     public ResponseEntity<CustomerDTO> updateCustomer(
             @PathVariable Integer id,
-            @RequestBody CustomerDTO dto) {
+           @Valid @RequestBody CustomerDTO dto) {
         return ResponseEntity.ok(customerService.updateCustomer(id, dto));
     }
 
