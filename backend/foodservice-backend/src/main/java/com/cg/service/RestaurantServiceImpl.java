@@ -3,6 +3,10 @@ package com.cg.service;
 import com.cg.dto.RestaurantRequestDTO;
 import com.cg.dto.RestaurantResponseDTO;
 import com.cg.entity.Restaurant;
+import com.cg.exceptions.DuplicateDataException;
+import com.cg.exceptions.IdNotFoundException;
+import com.cg.exceptions.NameNotFoundException;
+import com.cg.exceptions.PhoneNumberNotFoundException;
 import com.cg.repo.RestaurantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -77,7 +81,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     public RestaurantResponseDTO addRestaurant(RestaurantRequestDTO requestDTO) {
         // restaurantId is manually supplied (no @GeneratedValue on entity)
         if (restaurantRepository.existsById(requestDTO.getRestaurantId())) {
-            throw new RuntimeException("Restaurant with ID " + requestDTO.getRestaurantId() + " already exists.");
+            throw new DuplicateDataException("Restaurant with ID " + requestDTO.getRestaurantId() + " already exists.");
         }
         Restaurant restaurant = toEntity(requestDTO);
         Restaurant saved = restaurantRepository.save(restaurant);
@@ -88,7 +92,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Transactional(readOnly = true)
     public RestaurantResponseDTO getRestaurantById(Integer restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
-                .orElseThrow(() -> new RuntimeException("Restaurant not found with ID: " + restaurantId));
+                .orElseThrow(() -> new IdNotFoundException("Restaurant not found with ID: " + restaurantId));
         return toResponseDTO(restaurant);
     }
 
@@ -104,7 +108,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Override
     public RestaurantResponseDTO updateRestaurant(Integer restaurantId, RestaurantRequestDTO requestDTO) {
         Restaurant existing = restaurantRepository.findById(restaurantId)
-                .orElseThrow(() -> new RuntimeException("Restaurant not found with ID: " + restaurantId));
+                .orElseThrow(() -> new IdNotFoundException("Restaurant not found with ID: " + restaurantId));
 
         // Update only scalar fields; relationships are untouched
         existing.setRestaurantName(requestDTO.getRestaurantName());
@@ -118,7 +122,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Override
     public void deleteRestaurant(Integer restaurantId) {
         if (!restaurantRepository.existsById(restaurantId)) {
-            throw new RuntimeException("Restaurant not found with ID: " + restaurantId);
+            throw new IdNotFoundException("Restaurant not found with ID: " + restaurantId);
         }
         restaurantRepository.deleteById(restaurantId);
     }
@@ -131,7 +135,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Transactional(readOnly = true)
     public RestaurantResponseDTO getRestaurantByName(String restaurantName) {
         Restaurant restaurant = restaurantRepository.findByRestaurantName(restaurantName)
-                .orElseThrow(() -> new RuntimeException("Restaurant not found with name: " + restaurantName));
+                .orElseThrow(() -> new NameNotFoundException("Restaurant not found with name: " + restaurantName));
         return toResponseDTO(restaurant);
     }
 
@@ -148,7 +152,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Transactional(readOnly = true)
     public RestaurantResponseDTO getRestaurantByPhone(String restaurantPhone) {
         Restaurant restaurant = restaurantRepository.findByRestaurantPhone(restaurantPhone)
-                .orElseThrow(() -> new RuntimeException("Restaurant not found with phone: " + restaurantPhone));
+                .orElseThrow(() -> new PhoneNumberNotFoundException("Restaurant not found with phone: " + restaurantPhone));
         return toResponseDTO(restaurant);
     }
 
@@ -178,7 +182,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Transactional(readOnly = true)
     public RestaurantResponseDTO getRestaurantByMenuItemId(int itemId) {
         Restaurant restaurant = restaurantRepository.findByMenuItemId(itemId)
-                .orElseThrow(() -> new RuntimeException("No restaurant found for menu item ID: " + itemId));
+                .orElseThrow(() -> new IdNotFoundException("No restaurant found for menu item ID: " + itemId));
         return toResponseDTO(restaurant);
     }
 
@@ -213,7 +217,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Transactional(readOnly = true)
     public RestaurantResponseDTO getRestaurantByOrderId(Integer orderId) {
         Restaurant restaurant = restaurantRepository.findByOrderId(orderId)
-                .orElseThrow(() -> new RuntimeException("No restaurant found for order ID: " + orderId));
+                .orElseThrow(() -> new IdNotFoundException("No restaurant found for order ID: " + orderId));
         return toResponseDTO(restaurant);
     }
 
