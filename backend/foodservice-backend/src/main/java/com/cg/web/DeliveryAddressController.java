@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import com.cg.dto.DeliveryAddressDTO;
 import com.cg.service.DeliveryAddressService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/addresses")
 public class DeliveryAddressController {
@@ -18,7 +20,7 @@ public class DeliveryAddressController {
 
     // CREATE
     @PostMapping
-    public ResponseEntity<DeliveryAddressDTO> createAddress(@RequestBody DeliveryAddressDTO dto) {
+    public ResponseEntity<DeliveryAddressDTO> createAddress(@Valid @RequestBody DeliveryAddressDTO dto) {
         return ResponseEntity.ok(addressService.createAddress(dto));
     }
 
@@ -38,7 +40,7 @@ public class DeliveryAddressController {
     @PutMapping("/{id}")
     public ResponseEntity<DeliveryAddressDTO> updateAddress(
             @PathVariable Integer id,
-            @RequestBody DeliveryAddressDTO dto) {
+           @Valid @RequestBody DeliveryAddressDTO dto) {
         return ResponseEntity.ok(addressService.updateAddress(id, dto));
     }
 
