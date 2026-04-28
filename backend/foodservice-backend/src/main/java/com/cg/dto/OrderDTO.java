@@ -5,6 +5,7 @@ import java.util.Set;
 
 public class OrderDTO {
 
+	private Integer orderId;
     private Integer customerId;
     private Integer restaurantId;
     private Integer deliveryDriverId;
@@ -15,6 +16,14 @@ public class OrderDTO {
     private Set<Integer> couponIds;
 
     private Set<OrderItemDTO> items;
+    
+    public Integer getOrderId() {
+    	return orderId;
+    }
+    
+    public void setOrderId(Integer orderId) {
+    	this.orderId=orderId;
+    }
 
     public Integer getCustomerId() {
         return customerId;
