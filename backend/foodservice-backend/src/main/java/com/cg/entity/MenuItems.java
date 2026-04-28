@@ -15,7 +15,7 @@ public class MenuItems {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int itemId;
+    private Integer itemId;
 
     private String itemName;
     private String itemDescription;
@@ -28,11 +28,11 @@ public class MenuItems {
     @OneToMany(mappedBy = "menuItem")
     private List<OrderItem> orderItems;
 
-	public int getItemId() {
+	public Integer getItemId() {
 		return itemId;
 	}
 
-	public void setItemId(int itemId) {
+	public void setItemId(Integer itemId) {
 		this.itemId = itemId;
 	}
 
