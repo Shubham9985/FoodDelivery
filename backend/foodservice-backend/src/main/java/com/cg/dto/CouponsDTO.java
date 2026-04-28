@@ -2,16 +2,29 @@ package com.cg.dto;
 
 import java.time.LocalDate;
 
-public class CouponsDto {
+import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
-    private Integer couponId;
+public class CouponsDTO {
+
+	private Integer couponId;
+
+    @NotBlank(message = "Coupon code cannot be empty")
     private String couponCode;
+
+    @NotNull(message = "Discount amount is required")
+    @Positive(message = "Discount amount must be greater than 0")
     private Double discountAmount;
+
+    @NotNull(message = "Expiry date is required")
+    @Future(message = "Expiry date must be in the future")
     private LocalDate expiryDate;
 
-    public CouponsDto() {}
+    public CouponsDTO() {}
 
-    public CouponsDto(Integer couponId, String couponCode, Double discountAmount, LocalDate expiryDate) {
+    public CouponsDTO(Integer couponId, String couponCode, Double discountAmount, LocalDate expiryDate) {
         this.couponId = couponId;
         this.couponCode = couponCode;
         this.discountAmount = discountAmount;
