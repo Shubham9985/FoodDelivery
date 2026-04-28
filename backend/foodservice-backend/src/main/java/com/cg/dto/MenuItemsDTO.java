@@ -2,6 +2,14 @@ package com.cg.dto;
 
 import java.util.List;
 
+import jakarta.validation.constraints.NotNull;
+
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
+
 public class MenuItemsDTO {
 
     // =========================================================================
@@ -9,18 +17,61 @@ public class MenuItemsDTO {
     // =========================================================================
     public static class Request {
 
-        // itemId excluded — @GeneratedValue(IDENTITY) on entity, DB assigns it
+        // ─── itemId ────────────────────────────────────────────────────────────
+        // Excluded intentionally — @GeneratedValue(IDENTITY) on entity.
+        // The DB assigns it; the client must never send it.
 
+        // ─── itemName ──────────────────────────────────────────────────────────
+        // @NotBlank → rejects null, "", and whitespace-only strings.
+        // @Size     → no explicit @Column length on entity field, applying a
+        //             safe 255-char ceiling consistent with the DB VARCHAR default.
+
+        @NotBlank(message = "Item name must not be blank")
+        @Size(max = 255, message = "Item name must not exceed 255 characters")
         private String itemName;
+
+        // ─── itemDescription ───────────────────────────────────────────────────
+        // @NotBlank → a description is required; blank descriptions are meaningless.
+        // @Size     → 500-char ceiling gives room for a proper description without
+        //             letting clients send unbounded text.
+
+        @NotBlank(message = "Item description must not be blank")
+        @Size(max = 500, message = "Item description must not exceed 500 characters")
         private String itemDescription;
+
+        // ─── itemPrice ─────────────────────────────────────────────────────────
+        // @NotNull      → price must always be present; no free items by accident.
+        // @DecimalMin   → price must be greater than 0.00 (inclusive=false).
+        //                 "0.00" itself is also rejected — a zero-priced item
+        //                 is almost certainly a data entry mistake.
+        // @Digits       → caps integer part at 8 digits and fraction at 2 digits,
+        //                 matching a standard DECIMAL(10,2) column.
+        //                 Rejects values like 999999999.999 before they reach JPA.
+
+        @NotNull(message = "Item price must not be null")
+        @DecimalMin(value = "0.01", message = "Item price must be greater than 0")
+        @Digits(
+            integer = 8,
+            fraction = 2,
+            message = "Item price must have at most 8 integer digits and 2 decimal places"
+        )
         private Double itemPrice;
 
-        // From @ManyToOne Restaurant
-        // Client sends only the FK — not the full Restaurant object
+        // ─── restaurantId ──────────────────────────────────────────────────────
+        // @NotNull  → every menu item must belong to a restaurant; orphan items
+        //             are not allowed (matches @ManyToOne on entity + FK column).
+        // @Positive → valid restaurant IDs always start from 1 (manually assigned,
+        //             no @GeneratedValue — so 0 and negatives are always wrong).
+        // Note: existence of this restaurantId in the DB is checked in the service
+        //       layer (requires a DB lookup — Bean Validation can't do that).
+
+        @NotNull(message = "Restaurant ID must not be null")
+        @Positive(message = "Restaurant ID must be a positive integer")
         private Integer restaurantId;
 
-        // From @OneToMany List<OrderItem>
-        // Excluded — client never sends order data when creating a menu item
+        // ─── orderItemIds excluded ─────────────────────────────────────────────
+        // Client never sends order data when creating or updating a menu item.
+        // Orders are managed through the Order/OrderItem flow, not here.
 
         // ─── Constructors ─────────────────────────────────────────────────────
 
@@ -49,27 +100,23 @@ public class MenuItemsDTO {
 
         public Integer getRestaurantId() { return restaurantId; }
         public void setRestaurantId(Integer restaurantId) { this.restaurantId = restaurantId; }
-
-        
     }
 
     // =========================================================================
-    // RESPONSE DTO — used for GET, POST and PUT responses sent back to client
+    // RESPONSE DTO — used for GET, POST and PUT responses sent back to client.
+    // No validation annotations here — responses are never validated as input.
     // =========================================================================
     public static class Response {
 
-        // All entity fields included in response
         private int    itemId;
         private String itemName;
         private String itemDescription;
         private Double itemPrice;
 
-        // From @ManyToOne Restaurant
-        // Flattened to avoid Restaurant → MenuItems → Restaurant infinite recursion
+        // Flattened from @ManyToOne Restaurant — avoids infinite recursion
         private Integer restaurantId;
         private String  restaurantName;
 
-        // From @OneToMany List<OrderItem>
         // Exposed as ID list only — avoids LazyInitializationException
         private List<Integer> orderItemIds;
 
