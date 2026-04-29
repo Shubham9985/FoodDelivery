@@ -113,29 +113,54 @@ public class CartServiceImpl implements CartService {
     @Override
     public void checkout(Integer customerId) {
 
-        Cart cart = getOrCreateCart(customerId);
+        Cart cart = cartRepo.findByCustomerCustomerId(customerId)
+                .orElseThrow(() -> new RuntimeException("Cart not found"));
 
-        if (cart.getItems().isEmpty()) {
+        if (cart.getItems() == null || cart.getItems().isEmpty()) {
             throw new RuntimeException("Cart is empty");
         }
 
         Order order = new Order();
+
+
+        if (cart.getCustomer() == null) {
+            throw new RuntimeException("Customer not found in cart");
+        }
         order.setCustomer(cart.getCustomer());
+
         order.setOrderStatus("PLACED");
         order.setOrderDate(java.time.LocalDateTime.now());
 
-        Set<OrderItem> orderItems = cart.getItems().stream().map(ci -> {
-            OrderItem oi = new OrderItem();
-            oi.setMenuItem(ci.getMenuItem());
-            oi.setQuantity(ci.getQuantity());
-            oi.setOrder(order);
-            return oi;
-        }).collect(Collectors.toSet());
+       
+        MenuItems firstItem = cart.getItems().iterator().next().getMenuItem();
+
+        if (firstItem == null || firstItem.getRestaurant() == null) {
+            throw new RuntimeException("Restaurant not found for cart items");
+        }
+
+        order.setRestaurant(firstItem.getRestaurant());
+
+        
+        Set<OrderItem> orderItems = cart.getItems().stream()
+                .filter(ci -> ci != null && ci.getMenuItem() != null)
+                .map(ci -> {
+                    OrderItem oi = new OrderItem();
+                    oi.setMenuItem(ci.getMenuItem());
+                    oi.setQuantity(ci.getQuantity());
+                    oi.setOrder(order);
+                    return oi;
+                }).collect(Collectors.toSet());
+
+        if (orderItems.isEmpty()) {
+            throw new RuntimeException("No valid items in cart");
+        }
 
         order.setOrderItems(orderItems);
 
+       
         orderRepo.save(order);
 
+       
         cart.getItems().clear();
         cartRepo.save(cart);
     }

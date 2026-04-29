@@ -39,7 +39,7 @@ public class Order {
     )
     private Set<Coupons> coupons;
     @JsonIgnore
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<OrderItem> orderItems;
 
 
