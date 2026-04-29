@@ -3,7 +3,10 @@ package com.cg.service;
 import com.cg.dto.CartItemDTO;
 import com.cg.dto.CartResponseDTO;
 import com.cg.entity.*;
+import com.cg.exceptions.CartEmptyException;
+import com.cg.exceptions.CartNotFoundException;
 import com.cg.exceptions.IdNotFoundException;
+import com.cg.exceptions.InvalidQuantityException;
 import com.cg.repo.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +53,7 @@ public class CartServiceImpl implements CartService {
         MenuItems item = menuRepo.findById(itemId).orElseThrow(()-> new IdNotFoundException("Item not Found"));
         
         if(quantity <= 0){
-            throw new RuntimeException("Quantity must be > 0");
+            throw new InvalidQuantityException("Quantity must be greater than 0");
         }
 
         CartItem existing = cart.getItems().stream()
@@ -114,10 +117,10 @@ public class CartServiceImpl implements CartService {
     public void checkout(Integer customerId) {
 
         Cart cart = cartRepo.findByCustomerCustomerId(customerId)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
+                .orElseThrow(() -> new CartNotFoundException("Cart not found"));
 
         if (cart.getItems() == null || cart.getItems().isEmpty()) {
-            throw new RuntimeException("Cart is empty");
+            throw new CartEmptyException("Cart is empty");
         }
 
         Order order = new Order();
