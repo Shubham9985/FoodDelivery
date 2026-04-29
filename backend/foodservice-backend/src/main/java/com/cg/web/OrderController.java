@@ -1,13 +1,11 @@
 package com.cg.web;
 
-import com.cg.dto.OrderDTO;
 
 import com.cg.dto.OrderResponseDTO;
 import com.cg.service.OrderService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -16,11 +14,6 @@ public class OrderController {
 
     @Autowired
     private OrderService orderService;
-
-    @PostMapping
-    public OrderResponseDTO createOrder(@Valid @RequestBody OrderDTO dto) {
-        return orderService.createOrder(dto);
-    }
 
     @GetMapping("/{id}")
     public OrderResponseDTO getOrder(@PathVariable Integer id) {
@@ -69,29 +62,6 @@ public class OrderController {
     @PutMapping("/{id}/cancel")
     public OrderResponseDTO cancelOrder(@PathVariable Integer id) {
         return orderService.cancelOrder(id);
-    }
-
-    @PostMapping("/{id}/items")
-    public OrderResponseDTO addItem(
-            @PathVariable Integer id,
-            @RequestParam Integer itemId,
-            @RequestParam Integer quantity) {
-        return orderService.addItemToOrder(id, itemId, quantity);
-    }
-
-    @PutMapping("/{id}/items/{itemId}")
-    public OrderResponseDTO updateItem(
-            @PathVariable Integer id,
-            @PathVariable Integer itemId,
-            @RequestParam Integer quantity) {
-        return orderService.updateItemQuantity(id, itemId, quantity);
-    }
-
-    @DeleteMapping("/{id}/items/{itemId}")
-    public OrderResponseDTO removeItem(
-            @PathVariable Integer id,
-            @PathVariable Integer itemId) {
-        return orderService.removeItemFromOrder(id, itemId);
     }
 
     @PutMapping("/{id}/coupon/{couponId}")

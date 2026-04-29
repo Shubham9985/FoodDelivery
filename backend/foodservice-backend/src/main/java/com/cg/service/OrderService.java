@@ -7,7 +7,6 @@ import com.cg.dto.OrderResponseDTO;
 
 public interface OrderService {
 	
-	OrderResponseDTO createOrder(OrderDTO dto);
 	OrderResponseDTO getOrderById(Integer orderId);
 	List<OrderResponseDTO> getAllOrders();
 	
@@ -19,11 +18,6 @@ public interface OrderService {
 	OrderResponseDTO updateOrderStatus(Integer orderId,String status);
 	OrderResponseDTO assignDriver(Integer orderId, Integer driverId);
     OrderResponseDTO cancelOrder(Integer orderId);
-
-
-    OrderResponseDTO addItemToOrder(Integer orderId, Integer itemId, Integer quantity);
-    OrderResponseDTO updateItemQuantity(Integer orderId, Integer itemId, Integer quantity);
-    OrderResponseDTO removeItemFromOrder(Integer orderId, Integer itemId);
 
     OrderResponseDTO applyCoupon(Integer orderId, Integer couponId);
     OrderResponseDTO removeCoupon(Integer orderId, Integer couponId);

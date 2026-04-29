@@ -1,5 +1,6 @@
 package com.cg.service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -7,15 +8,14 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.cg.dto.OrderDTO;
 import com.cg.dto.OrderItemDTO;
 import com.cg.dto.OrderResponseDTO;
-import com.cg.entity.Coupons;
 import com.cg.entity.Order;
 import com.cg.entity.OrderItem;
 import com.cg.exceptions.IdNotFoundException;
 import com.cg.exceptions.InvalidInputException;
 import com.cg.exceptions.OrderException;
+import com.cg.repo.CartRepository;
 import com.cg.repo.CouponsRepository;
 import com.cg.repo.CustomerRepository;
 import com.cg.repo.DeliveryDriverRepository;
@@ -47,50 +47,10 @@ public class OrderServiceImpl implements OrderService {
 	@Autowired
 	private OrderRepository orderRepo;
 	
+	@Autowired
+	private CartRepository cartRepo;
+	
 
-	@Override
-	public OrderResponseDTO createOrder(OrderDTO dto) {
-
-	    Order order = new Order();
-
-	    order.setOrderStatus(dto.getOrderStatus());
-	    order.setOrderDate(dto.getOrderDate());
-
-	    order.setCustomer(customerRepo.findById(dto.getCustomerId())
-	    		.orElseThrow(() -> new IdNotFoundException("Customer not found")));
-	    order.setRestaurant(restaurantRepo.findById(dto.getRestaurantId()).
-	    		orElseThrow(() -> new IdNotFoundException("Restaurant not found")));
-
-	    if (dto.getDeliveryDriverId() != null) {
-	        order.setDeliveryDriver(driverRepo.findById(dto.getDeliveryDriverId())
-	        		.orElseThrow(() -> new IdNotFoundException("Driver not found")));
-	    }
-
-	    if (dto.getCouponIds() != null) {
-	        Set<Coupons> coupon = dto.getCouponIds().stream()
-	                .map(id -> couponRepo.findById(id)
-	                		.orElseThrow(() -> new IdNotFoundException("Coupon not found")))
-	                .collect(Collectors.toSet());
-	        order.setCoupons(coupon);
-	    }
-
-	    if (dto.getItems() != null) {
-	        Set<OrderItem> items = dto.getItems().stream().map(i -> {
-	            OrderItem item = new OrderItem();
-	            item.setQuantity(i.getQuantity());
-	            item.setMenuItem(menuRepo.findById(i.getItemId())
-	            		.orElseThrow(() -> new IdNotFoundException("Menu item not found")));
-	            item.setOrder(order);
-	            return item;
-	        }).collect(Collectors.toSet());
-
-	        order.setOrderItems(items);
-	    }
-
-	    Order savedOrder = orderRepo.save(order);
-
-	    return mapToDTO(savedOrder);
-	}
 
 	@Override
 	public OrderResponseDTO getOrderById(Integer orderId) {
@@ -122,7 +82,10 @@ public class OrderServiceImpl implements OrderService {
 
 	@Override
 	public List<OrderResponseDTO> getOrdersByStatus(String status) {
-		return orderRepo.findByOrderStatus(status).stream().map(this::mapToDTO).collect(Collectors.toList());
+	    return orderRepo.findByOrderStatusIgnoreCase(status)
+	            .stream()
+	            .map(this::mapToDTO)
+	            .collect(Collectors.toList());
 	}
 
 	@Override
@@ -132,7 +95,7 @@ public class OrderServiceImpl implements OrderService {
 		if(status == null || status.isBlank()){
 		    throw new InvalidInputException("Status cannot be empty");
 		}
-		order.setOrderStatus(status);
+		order.setOrderStatus(status.toUpperCase());
 		orderRepo.save(order);
 		return mapToDTO(order);
 	}
@@ -161,51 +124,7 @@ public class OrderServiceImpl implements OrderService {
 		return mapToDTO(orderRepo.save(order));
 	}
 
-	@Override
-	public OrderResponseDTO addItemToOrder(Integer orderId, Integer itemId, Integer quantity) {
-		Order order = orderRepo.findById(orderId)
-				.orElseThrow(() -> new IdNotFoundException("Order not found"));
-		OrderItem item = new OrderItem();
-		if(quantity <= 0){
-		    throw new InvalidInputException("Quantity must be greater than zero");
-		}
-		item.setQuantity(quantity);
-		item.setMenuItem(menuRepo.findById(itemId)
-				.orElseThrow(() -> new IdNotFoundException("Menu item not found")));
-		item.setOrder(order);
-		order.getOrderItems().add(item);
-		return mapToDTO(orderRepo.save(order));
-	}
-
-	@Override
-	public OrderResponseDTO updateItemQuantity(Integer orderId, Integer itemId, Integer quantity) {
-		Order order = orderRepo.findById(orderId)
-				.orElseThrow(() -> new IdNotFoundException("Order not found"));
-		if(quantity <= 0){
-	        throw new InvalidInputException("Quantity must be greater than zero");
-	    }
- 
-		order.getOrderItems().forEach(item -> {
-	            if (item.getMenuItem().getItemId().equals(itemId)) {
-	                item.setQuantity(quantity);
-	            }
-	        });
-		 
-		 return mapToDTO(orderRepo.save(order));
-		
-	}
-
-	@Override
-	public OrderResponseDTO removeItemFromOrder(Integer orderId, Integer itemId) {
-		 Order order = orderRepo.findById(orderId)
-				 .orElseThrow(() -> new IdNotFoundException("Order not found"));
-
-	        order.getOrderItems().removeIf(
-	                item -> item.getMenuItem().getItemId().equals(itemId)
-	        );
-
-	        return mapToDTO(orderRepo.save(order));
-	}
+	
 
 	@Override
 	public OrderResponseDTO applyCoupon(Integer orderId, Integer couponId) {
@@ -226,30 +145,44 @@ public class OrderServiceImpl implements OrderService {
 
 	private OrderResponseDTO mapToDTO(Order order) {
 
-		OrderResponseDTO dto = new OrderResponseDTO();
+	    OrderResponseDTO dto = new OrderResponseDTO();
 
-		dto.setOrderId(order.getOrderId());
-		dto.setOrderStatus(order.getOrderStatus());
-		dto.setOrderDate(order.getOrderDate());
+	    if (order == null) return dto;
 
-		dto.setCustomerId(order.getCustomer().getCustomerId());
-		dto.setRestaurantId(order.getRestaurant().getRestaurantId());
+	    dto.setOrderId(order.getOrderId());
+	    dto.setOrderStatus(order.getOrderStatus());
+	    dto.setOrderDate(order.getOrderDate());
 
-		if (order.getDeliveryDriver() != null) {
-			dto.setDriverId(order.getDeliveryDriver().getDriverId());
-		}
+	    if (order.getCustomer() != null) {
+	        dto.setCustomerId(order.getCustomer().getCustomerId());
+	    }
 
-		Set<OrderItemDTO> items = order.getOrderItems().stream().map(i -> {
-			OrderItemDTO d = new OrderItemDTO();
-			d.setItemId(i.getMenuItem().getItemId());
-			d.setQuantity(i.getQuantity());
-			return d;
-		}).collect(Collectors.toSet());
+	    if (order.getRestaurant() != null) {
+	        dto.setRestaurantId(order.getRestaurant().getRestaurantId());
+	    }
 
-		dto.setItems(items);
+	    if (order.getDeliveryDriver() != null) {
+	        dto.setDriverId(order.getDeliveryDriver().getDriverId());
+	    }
 
-		return dto;
+	    Set<OrderItemDTO> items = new HashSet<>();
 
+	    if (order.getOrderItems() != null) {
+	        for (OrderItem i : order.getOrderItems()) {
+
+	            if (i == null || i.getMenuItem() == null) continue;
+
+	            OrderItemDTO d = new OrderItemDTO();
+	            d.setItemId(i.getMenuItem().getItemId());
+	            d.setQuantity(i.getQuantity());
+
+	            items.add(d);
+	        }
+	    }
+
+	    dto.setItems(items);
+
+	    return dto;
 	}
 
 }
