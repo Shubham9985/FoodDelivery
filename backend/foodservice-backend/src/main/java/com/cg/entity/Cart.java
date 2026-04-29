@@ -1,7 +1,9 @@
 package com.cg.entity;
 
+import java.util.HashSet;
 import java.util.Set;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -19,8 +21,8 @@ public class Cart {
 	@OneToOne
 	private Customer customer;
 	
-	@OneToMany(mappedBy="cart")
-	private Set<CartItem> items;
+	@OneToMany(mappedBy="cart", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<CartItem> items = new HashSet<>();
 
 	public Integer getCartId() {
 		return cartId;
