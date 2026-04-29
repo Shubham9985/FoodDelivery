@@ -71,29 +71,6 @@ public class OrderController {
         return orderService.cancelOrder(id);
     }
 
-    @PostMapping("/{id}/items")
-    public OrderResponseDTO addItem(
-            @PathVariable Integer id,
-            @RequestParam Integer itemId,
-            @RequestParam Integer quantity) {
-        return orderService.addItemToOrder(id, itemId, quantity);
-    }
-
-    @PutMapping("/{id}/items/{itemId}")
-    public OrderResponseDTO updateItem(
-            @PathVariable Integer id,
-            @PathVariable Integer itemId,
-            @RequestParam Integer quantity) {
-        return orderService.updateItemQuantity(id, itemId, quantity);
-    }
-
-    @DeleteMapping("/{id}/items/{itemId}")
-    public OrderResponseDTO removeItem(
-            @PathVariable Integer id,
-            @PathVariable Integer itemId) {
-        return orderService.removeItemFromOrder(id, itemId);
-    }
-
     @PutMapping("/{id}/coupon/{couponId}")
     public OrderResponseDTO applyCoupon(
             @PathVariable Integer id,

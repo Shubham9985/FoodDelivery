@@ -30,9 +30,6 @@ public class OrderDTO {
     private LocalDateTime orderDate;
 
     private Set<Integer> couponIds; 
-
-    @NotEmpty(message = "Order must contain at least one item")
-    private Set<OrderItemDTO> items;
     public Integer getOrderId() {
     	return orderId;
     }
@@ -89,11 +86,4 @@ public class OrderDTO {
         this.couponIds = couponIds;
     }
 
-    public Set<OrderItemDTO> getItems() {
-        return items;
-    }
-
-    public void setItems(Set<OrderItemDTO> items) {
-        this.items = items;
-    }
 }

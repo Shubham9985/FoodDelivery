@@ -10,12 +10,14 @@ import org.springframework.stereotype.Service;
 import com.cg.dto.OrderDTO;
 import com.cg.dto.OrderItemDTO;
 import com.cg.dto.OrderResponseDTO;
+import com.cg.entity.Cart;
 import com.cg.entity.Coupons;
 import com.cg.entity.Order;
 import com.cg.entity.OrderItem;
 import com.cg.exceptions.IdNotFoundException;
 import com.cg.exceptions.InvalidInputException;
 import com.cg.exceptions.OrderException;
+import com.cg.repo.CartRepository;
 import com.cg.repo.CouponsRepository;
 import com.cg.repo.CustomerRepository;
 import com.cg.repo.DeliveryDriverRepository;
@@ -47,6 +49,9 @@ public class OrderServiceImpl implements OrderService {
 	@Autowired
 	private OrderRepository orderRepo;
 	
+	@Autowired
+	private CartRepository cartRepo;
+	
 
 	@Override
 	public OrderResponseDTO createOrder(OrderDTO dto) {
@@ -74,18 +79,25 @@ public class OrderServiceImpl implements OrderService {
 	        order.setCoupons(coupon);
 	    }
 
-	    if (dto.getItems() != null) {
-	        Set<OrderItem> items = dto.getItems().stream().map(i -> {
-	            OrderItem item = new OrderItem();
-	            item.setQuantity(i.getQuantity());
-	            item.setMenuItem(menuRepo.findById(i.getItemId())
-	            		.orElseThrow(() -> new IdNotFoundException("Menu item not found")));
-	            item.setOrder(order);
-	            return item;
-	        }).collect(Collectors.toSet());
+	    Cart cart = cartRepo.findByCustomerCustomerId(dto.getCustomerId())
+	            .orElseThrow(() -> new IdNotFoundException("Cart not found"));
 
-	        order.setOrderItems(items);
+	    if (cart.getItems().isEmpty()) {
+	        throw new OrderException("Cart is empty");
 	    }
+
+	    Set<OrderItem> items = cart.getItems().stream().map(ci -> {
+	        OrderItem oi = new OrderItem();
+	        oi.setMenuItem(ci.getMenuItem());
+	        oi.setQuantity(ci.getQuantity());
+	        oi.setOrder(order);
+	        return oi;
+	    }).collect(Collectors.toSet());
+
+	    order.setOrderItems(items);
+
+	    cart.getItems().clear();
+	    cartRepo.save(cart);
 
 	    Order savedOrder = orderRepo.save(order);
 
@@ -161,51 +173,7 @@ public class OrderServiceImpl implements OrderService {
 		return mapToDTO(orderRepo.save(order));
 	}
 
-	@Override
-	public OrderResponseDTO addItemToOrder(Integer orderId, Integer itemId, Integer quantity) {
-		Order order = orderRepo.findById(orderId)
-				.orElseThrow(() -> new IdNotFoundException("Order not found"));
-		OrderItem item = new OrderItem();
-		if(quantity <= 0){
-		    throw new InvalidInputException("Quantity must be greater than zero");
-		}
-		item.setQuantity(quantity);
-		item.setMenuItem(menuRepo.findById(itemId)
-				.orElseThrow(() -> new IdNotFoundException("Menu item not found")));
-		item.setOrder(order);
-		order.getOrderItems().add(item);
-		return mapToDTO(orderRepo.save(order));
-	}
-
-	@Override
-	public OrderResponseDTO updateItemQuantity(Integer orderId, Integer itemId, Integer quantity) {
-		Order order = orderRepo.findById(orderId)
-				.orElseThrow(() -> new IdNotFoundException("Order not found"));
-		if(quantity <= 0){
-	        throw new InvalidInputException("Quantity must be greater than zero");
-	    }
- 
-		order.getOrderItems().forEach(item -> {
-	            if (item.getMenuItem().getItemId().equals(itemId)) {
-	                item.setQuantity(quantity);
-	            }
-	        });
-		 
-		 return mapToDTO(orderRepo.save(order));
-		
-	}
-
-	@Override
-	public OrderResponseDTO removeItemFromOrder(Integer orderId, Integer itemId) {
-		 Order order = orderRepo.findById(orderId)
-				 .orElseThrow(() -> new IdNotFoundException("Order not found"));
-
-	        order.getOrderItems().removeIf(
-	                item -> item.getMenuItem().getItemId().equals(itemId)
-	        );
-
-	        return mapToDTO(orderRepo.save(order));
-	}
+	
 
 	@Override
 	public OrderResponseDTO applyCoupon(Integer orderId, Integer couponId) {
