@@ -5,9 +5,11 @@ import com.cg.dto.CartResponseDTO;
 import com.cg.entity.*;
 import com.cg.exceptions.CartEmptyException;
 import com.cg.exceptions.CartNotFoundException;
+import com.cg.exceptions.CustomerNotFoundException;
 import com.cg.exceptions.IdNotFoundException;
 import com.cg.exceptions.InvalidQuantityException;
 import com.cg.exceptions.ItemNotFoundException;
+import com.cg.exceptions.RestaurantNotFoundException;
 import com.cg.repo.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +34,7 @@ public class CartServiceImpl implements CartService {
         return cartRepo.findByCustomerCustomerId(customerId)
                 .orElseGet(() -> {
                     Cart cart = new Cart();
-                    cart.setCustomer(customerRepo.findById(customerId).orElseThrow(()-> new IdNotFoundException("Customer not found")));
+                    cart.setCustomer(customerRepo.findById(customerId).orElseThrow(()-> new CustomerNotFoundException("Customer not found")));
                     cart.setItems(new HashSet<>());
                     return cartRepo.save(cart);
                 });
@@ -128,7 +130,7 @@ public class CartServiceImpl implements CartService {
 
 
         if (cart.getCustomer() == null) {
-            throw new RuntimeException("Customer not found in cart");
+            throw new CustomerNotFoundException("Customer not found in cart");
         }
         order.setCustomer(cart.getCustomer());
 
@@ -139,7 +141,7 @@ public class CartServiceImpl implements CartService {
         MenuItems firstItem = cart.getItems().iterator().next().getMenuItem();
 
         if (firstItem == null || firstItem.getRestaurant() == null) {
-            throw new RuntimeException("Restaurant not found for cart items");
+            throw new RestaurantNotFoundException("Restaurant not found for cart items");
         }
 
         order.setRestaurant(firstItem.getRestaurant());
@@ -156,7 +158,7 @@ public class CartServiceImpl implements CartService {
                 }).collect(Collectors.toSet());
 
         if (orderItems.isEmpty()) {
-            throw new RuntimeException("No valid items in cart");
+            throw new CartEmptyException("No valid items in cart");
         }
 
         order.setOrderItems(orderItems);
