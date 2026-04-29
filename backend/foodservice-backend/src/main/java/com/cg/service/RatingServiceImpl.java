@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.cg.dto.RatingDTO;
 import com.cg.entity.Order;
 import com.cg.entity.Rating;
 import com.cg.exceptions.DuplicateDataException;
@@ -26,31 +27,40 @@ public class RatingServiceImpl implements RatingService {
     @Autowired
     private RestaurantRepository restaurantRepository;
 
+    // 🔁 DTO → Entity
+    private Rating mapToEntity(RatingDTO dto, Order order, com.cg.entity.Restaurant restaurant) {
+        Rating rating = new Rating();
+        rating.setRating(dto.getRating());
+        rating.setReview(dto.getReview());
+        rating.setOrder(order);
+        rating.setRestaurant(restaurant);
+        return rating;
+    }
+
     @Override
-    public Rating addRating(Rating rating) {
-    	
-        if (ratingRepository.findByOrder_OrderId(
-                rating.getOrder().getOrderId()).isPresent()) {
+    public Rating addRating(RatingDTO dto) {
+
+        // ❌ FIX: use dto.getOrderId() instead of dto.getOrder()
+        if (ratingRepository.findByOrder_OrderId(dto.getOrderId()).isPresent()) {
             throw new DuplicateDataException("Order already rated");
         }
 
-        // Validate rating range
-        if (rating.getRating() < 1 || rating.getRating() > 5) {
+        // Validate rating
+        if (dto.getRating() < 1 || dto.getRating() > 5) {
             throw new InvalidInputException("Rating must be between 1 and 5");
         }
 
-        // Fetch and attach proper entities
-        Order order = orderRepository.findById(
-                rating.getOrder().getOrderId())
+        // Fetch Order
+        Order order = orderRepository.findById(dto.getOrderId())
                 .orElseThrow(() -> new IdNotFoundException("Order not found"));
 
-        rating.setOrder(order);
+        // Fetch Restaurant
+        com.cg.entity.Restaurant restaurant = restaurantRepository
+                .findById(dto.getRestaurantId())
+                .orElseThrow(() -> new IdNotFoundException("Restaurant not found"));
 
-        rating.setRestaurant(
-                restaurantRepository.findById(
-                        rating.getRestaurant().getRestaurantId())
-                        .orElseThrow(() -> new IdNotFoundException("Restaurant not found"))
-        );
+        // 🔁 Map DTO → Entity
+        Rating rating = mapToEntity(dto, order, restaurant);
 
         return ratingRepository.save(rating);
     }
@@ -67,16 +77,16 @@ public class RatingServiceImpl implements RatingService {
     }
 
     @Override
-    public Rating updateRating(Integer ratingId, Rating rating) {
+    public Rating updateRating(Integer ratingId, RatingDTO dto) {
 
         Rating existing = getRatingById(ratingId);
 
-        if (rating.getRating() < 1 || rating.getRating() > 5) {
+        if (dto.getRating() < 1 || dto.getRating() > 5) {
             throw new InvalidInputException("Rating must be between 1 and 5");
         }
 
-        existing.setRating(rating.getRating());
-        existing.setReview(rating.getReview());
+        existing.setRating(dto.getRating());
+        existing.setReview(dto.getReview());
 
         return ratingRepository.save(existing);
     }

@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.cg.dto.CouponsDTO;
 import com.cg.entity.Coupons;
 import com.cg.exceptions.CouponCodeNotFoundException;
 import com.cg.exceptions.CouponException;
@@ -19,20 +20,30 @@ public class CouponsServiceImpl implements CouponsService {
     @Autowired
     private CouponsRepository couponsRepository;
 
-    @Override
-    public Coupons addCoupon(Coupons coupon) {
+    // 🔁 DTO → Entity
+    private Coupons mapToEntity(CouponsDTO dto) {
+        Coupons coupon = new Coupons();
+        coupon.setCouponId(dto.getCouponId());
+        coupon.setCouponCode(dto.getCouponCode());
+        coupon.setDiscountAmount(dto.getDiscountAmount());
+        coupon.setExpiryDate(dto.getExpiryDate());
+        return coupon;
+    }
 
-        // Duplicate check
-        if (couponsRepository.existsByCouponCode(coupon.getCouponCode())) {
+    @Override
+    public Coupons addCoupon(CouponsDTO couponDto) {
+
+        if (couponsRepository.existsByCouponCode(couponDto.getCouponCode())) {
             throw new DuplicateDataException("Coupon code already exists");
         }
 
-        // Expiry validation
-        if (coupon.getExpiryDate().isBefore(LocalDate.now())) {
+        if (couponDto.getExpiryDate().isBefore(LocalDate.now())) {
             throw new CouponException("Cannot add expired coupon");
         }
 
-        return couponsRepository.save(coupon);
+        Coupons coupon = mapToEntity(couponDto);
+
+        return couponsRepository.save(coupon); // ✅ correct
     }
 
     @Override
@@ -53,24 +64,23 @@ public class CouponsServiceImpl implements CouponsService {
     }
 
     @Override
-    public Coupons updateCoupon(Integer couponId, Coupons coupon) {
+    public Coupons updateCoupon(Integer couponId, CouponsDTO couponDto) {
 
-        Coupons existing = getCouponById(couponId);
+        Coupons existing = couponsRepository.findById(couponId)
+                .orElseThrow(() -> new IdNotFoundException("Coupon not found"));
 
-        // Prevent duplicate on update
-        if (!existing.getCouponCode().equals(coupon.getCouponCode()) &&
-            couponsRepository.existsByCouponCode(coupon.getCouponCode())) {
+        if (!existing.getCouponCode().equals(couponDto.getCouponCode()) &&
+                couponsRepository.existsByCouponCode(couponDto.getCouponCode())) {
             throw new DuplicateDataException("Coupon code already exists");
         }
 
-        // Expiry validation
-        if (coupon.getExpiryDate().isBefore(LocalDate.now())) {
+        if (couponDto.getExpiryDate().isBefore(LocalDate.now())) {
             throw new CouponException("Cannot set expired coupon");
         }
 
-        existing.setCouponCode(coupon.getCouponCode());
-        existing.setDiscountAmount(coupon.getDiscountAmount());
-        existing.setExpiryDate(coupon.getExpiryDate());
+        existing.setCouponCode(couponDto.getCouponCode());
+        existing.setDiscountAmount(couponDto.getDiscountAmount());
+        existing.setExpiryDate(couponDto.getExpiryDate());
 
         return couponsRepository.save(existing);
     }
@@ -80,14 +90,15 @@ public class CouponsServiceImpl implements CouponsService {
         Coupons coupon = getCouponById(couponId);
         couponsRepository.delete(coupon);
     }
-    
+
     @Override
     public Double applyCoupon(String code, Double orderAmount) {
-    	Coupons coupon = couponsRepository.findByCouponCode(code)
+
+        Coupons coupon = couponsRepository.findByCouponCode(code)
                 .orElseThrow(() -> new CouponCodeNotFoundException("Invalid coupon code"));
 
         if (coupon.getExpiryDate().isBefore(LocalDate.now())) {
-            throw new RuntimeException("Coupon expired");
+            throw new CouponException("Coupon expired");
         }
 
         double discount = coupon.getDiscountAmount();

@@ -15,8 +15,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cg.dto.CouponsDTO;
 import com.cg.entity.Coupons;
 import com.cg.service.CouponsService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/coupons")
@@ -26,8 +29,10 @@ public class CouponsController {
     private CouponsService couponService;
 
     @PostMapping
-    public ResponseEntity<Coupons> createCoupon(@RequestBody Coupons coupon) {
-        Coupons savedCoupon = couponService.addCoupon(coupon);
+    public ResponseEntity<Coupons> createCoupon(
+            @Valid @RequestBody CouponsDTO couponDto) {
+
+        Coupons savedCoupon = couponService.addCoupon(couponDto);
         return new ResponseEntity<>(savedCoupon, HttpStatus.CREATED);
     }
 
@@ -56,10 +61,10 @@ public class CouponsController {
     @PutMapping("/{id}")
     public ResponseEntity<Coupons> updateCoupon(
             @PathVariable Integer id,
-            @RequestBody Coupons coupon) {
+            @Valid @RequestBody CouponsDTO couponDto) {
 
         return ResponseEntity.ok(
-                couponService.updateCoupon(id, coupon)
+                couponService.updateCoupon(id, couponDto)
         );
     }
 
