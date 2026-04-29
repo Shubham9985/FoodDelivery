@@ -14,8 +14,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cg.dto.RatingDTO;
 import com.cg.entity.Rating;
 import com.cg.service.RatingService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/ratings")
@@ -23,10 +26,12 @@ public class RatingController {
 
     @Autowired
     private RatingService ratingService;
-
+    
     @PostMapping
-    public ResponseEntity<Rating> addRating(@RequestBody Rating rating) {
-        Rating savedRating = ratingService.addRating(rating);
+    public ResponseEntity<Rating> addRating(
+            @Valid @RequestBody RatingDTO dto) {
+
+        Rating savedRating = ratingService.addRating(dto);
         return new ResponseEntity<>(savedRating, HttpStatus.CREATED);
     }
 
@@ -38,6 +43,7 @@ public class RatingController {
     @GetMapping("/restaurant/{restaurantId}")
     public ResponseEntity<List<Rating>> getRatingsByRestaurant(
             @PathVariable Integer restaurantId) {
+
         return ResponseEntity.ok(
                 ratingService.getRatingsByRestaurant(restaurantId)
         );
@@ -46,9 +52,10 @@ public class RatingController {
     @PutMapping("/{id}")
     public ResponseEntity<Rating> updateRating(
             @PathVariable Integer id,
-            @RequestBody Rating rating) {
+            @Valid @RequestBody RatingDTO dto) {
+
         return ResponseEntity.ok(
-                ratingService.updateRating(id, rating)
+                ratingService.updateRating(id, dto)
         );
     }
 
