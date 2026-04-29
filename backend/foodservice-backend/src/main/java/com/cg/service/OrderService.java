@@ -20,11 +20,6 @@ public interface OrderService {
 	OrderResponseDTO assignDriver(Integer orderId, Integer driverId);
     OrderResponseDTO cancelOrder(Integer orderId);
 
-
-    OrderResponseDTO addItemToOrder(Integer orderId, Integer itemId, Integer quantity);
-    OrderResponseDTO updateItemQuantity(Integer orderId, Integer itemId, Integer quantity);
-    OrderResponseDTO removeItemFromOrder(Integer orderId, Integer itemId);
-
     OrderResponseDTO applyCoupon(Integer orderId, Integer couponId);
     OrderResponseDTO removeCoupon(Integer orderId, Integer couponId);
 	
