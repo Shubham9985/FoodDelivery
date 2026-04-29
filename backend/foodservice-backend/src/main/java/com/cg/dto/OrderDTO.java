@@ -1,20 +1,45 @@
 package com.cg.dto;
 
 import java.time.LocalDateTime;
+
+
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
+
 import java.util.Set;
+
 
 public class OrderDTO {
 
-    private Integer customerId;
-    private Integer restaurantId;
-    private Integer deliveryDriverId;
+	private Integer orderId;
 
+    @NotNull(message = "Customer ID is required")
+    private Integer customerId;
+
+    @NotNull(message = "Restaurant ID is required")
+    private Integer restaurantId;
+
+    private Integer deliveryDriverId; 
+
+    @NotNull(message = "Order status is required")
+    @Size(min = 3, message = "Order status must be valid")
     private String orderStatus;
+
+    @NotNull(message = "Order date is required")
     private LocalDateTime orderDate;
 
-    private Set<Integer> couponIds;
+    private Set<Integer> couponIds; 
 
+    @NotEmpty(message = "Order must contain at least one item")
     private Set<OrderItemDTO> items;
+    public Integer getOrderId() {
+    	return orderId;
+    }
+    
+    public void setOrderId(Integer orderId) {
+    	this.orderId=orderId;
+    }
 
     public Integer getCustomerId() {
         return customerId;

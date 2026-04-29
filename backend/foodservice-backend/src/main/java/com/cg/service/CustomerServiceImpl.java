@@ -10,6 +10,7 @@ import com.cg.dto.CustomerDTO;
 import com.cg.dto.DeliveryAddressDTO;
 import com.cg.entity.Customer;
 import com.cg.entity.DeliveryAddress;
+import com.cg.exceptions.IdNotFoundException;
 import com.cg.repo.CustomerRepository;
 import com.cg.service.CustomerService;
 
@@ -39,7 +40,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerDTO getCustomerById(Integer id) {
         Customer customer = customerRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> new IdNotFoundException("Customer not found"));
         return mapToDTO(customer);
     }
 
@@ -47,7 +48,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerDTO updateCustomer(Integer id, CustomerDTO dto) {
         Customer existing = customerRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> new IdNotFoundException("Customer not found"));
 
         existing.setCustomerName(dto.getCustomerName());
         existing.setCustomerEmail(dto.getCustomerEmail());
@@ -61,7 +62,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public void deleteCustomer(Integer id) {
         if (!customerRepo.existsById(id)) {
-            throw new RuntimeException("Customer not found");
+            throw new IdNotFoundException("Customer not found");
         }
         customerRepo.deleteById(id);
     }
@@ -70,7 +71,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public Set<DeliveryAddressDTO> getCustomerAddresses(Integer customerId) {
         Customer customer = customerRepo.findById(customerId)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> new IdNotFoundException("Customer not found"));
 
         return customer.getAddresses()
                 .stream()
