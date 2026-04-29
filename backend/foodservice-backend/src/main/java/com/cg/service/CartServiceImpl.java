@@ -7,6 +7,7 @@ import com.cg.exceptions.CartEmptyException;
 import com.cg.exceptions.CartNotFoundException;
 import com.cg.exceptions.IdNotFoundException;
 import com.cg.exceptions.InvalidQuantityException;
+import com.cg.exceptions.ItemNotFoundException;
 import com.cg.repo.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +51,7 @@ public class CartServiceImpl implements CartService {
 
         Cart cart = getOrCreateCart(customerId);
 
-        MenuItems item = menuRepo.findById(itemId).orElseThrow(()-> new IdNotFoundException("Item not Found"));
+        MenuItems item = menuRepo.findById(itemId).orElseThrow(()-> new ItemNotFoundException("Item not Found"));
         
         if(quantity <= 0){
             throw new InvalidQuantityException("Quantity must be greater than 0");
