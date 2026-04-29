@@ -7,7 +7,6 @@ import com.cg.dto.OrderResponseDTO;
 
 public interface OrderService {
 	
-	OrderResponseDTO createOrder(OrderDTO dto);
 	OrderResponseDTO getOrderById(Integer orderId);
 	List<OrderResponseDTO> getAllOrders();
 	
