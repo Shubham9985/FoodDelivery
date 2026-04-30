@@ -3,7 +3,6 @@ package com.cg.web;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cg.dto.RatingDTO;
-import com.cg.entity.Rating;
 import com.cg.service.RatingService;
 
 import jakarta.validation.Valid;
@@ -25,43 +23,42 @@ import jakarta.validation.Valid;
 public class RatingController {
 
     @Autowired
-    private RatingService ratingService;
-    
-    @PostMapping
-    public ResponseEntity<Rating> addRating(
-            @Valid @RequestBody RatingDTO dto) {
+    private RatingService service;
 
-        Rating savedRating = ratingService.addRating(dto);
-        return new ResponseEntity<>(savedRating, HttpStatus.CREATED);
+    @PostMapping
+    public ResponseEntity<RatingDTO> add(@Valid @RequestBody RatingDTO dto) {
+        return ResponseEntity.ok(service.addRating(dto));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Rating> getRatingById(@PathVariable Integer id) {
-        return ResponseEntity.ok(ratingService.getRatingById(id));
+    public ResponseEntity<RatingDTO> getById(@PathVariable Integer id) {
+        return ResponseEntity.ok(service.getRatingById(id));
     }
 
-    @GetMapping("/restaurant/{restaurantId}")
-    public ResponseEntity<List<Rating>> getRatingsByRestaurant(
-            @PathVariable Integer restaurantId) {
+    @GetMapping
+    public ResponseEntity<List<RatingDTO>> getAll() {
+        return ResponseEntity.ok(service.getAllRatings());
+    }
 
-        return ResponseEntity.ok(
-                ratingService.getRatingsByRestaurant(restaurantId)
-        );
+    @GetMapping("/restaurant/{id}")
+    public ResponseEntity<List<RatingDTO>> getByRestaurant(@PathVariable Integer id) {
+        return ResponseEntity.ok(service.getRatingsByRestaurant(id));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Rating> updateRating(
-            @PathVariable Integer id,
-            @Valid @RequestBody RatingDTO dto) {
-
-        return ResponseEntity.ok(
-                ratingService.updateRating(id, dto)
-        );
+    public ResponseEntity<RatingDTO> update(@PathVariable Integer id,
+                                           @Valid @RequestBody RatingDTO dto) {
+        return ResponseEntity.ok(service.updateRating(id, dto));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteRating(@PathVariable Integer id) {
-        ratingService.deleteRating(id);
-        return ResponseEntity.ok("Rating deleted successfully");
+    public ResponseEntity<String> delete(@PathVariable Integer id) {
+        service.deleteRating(id);
+        return ResponseEntity.ok("Deleted");
+    }
+
+    @GetMapping("/average/{restaurantId}")
+    public ResponseEntity<Double> avg(@PathVariable Integer restaurantId) {
+        return ResponseEntity.ok(service.getAverageRating(restaurantId));
     }
 }

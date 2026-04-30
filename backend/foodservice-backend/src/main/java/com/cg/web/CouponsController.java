@@ -3,7 +3,6 @@ package com.cg.web;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cg.dto.CouponsDTO;
-import com.cg.entity.Coupons;
 import com.cg.service.CouponsService;
 
 import jakarta.validation.Valid;
@@ -26,51 +24,45 @@ import jakarta.validation.Valid;
 public class CouponsController {
 
     @Autowired
-    private CouponsService couponService;
+    private CouponsService service;
 
     @PostMapping
-    public ResponseEntity<Coupons> createCoupon(
-            @Valid @RequestBody CouponsDTO couponDto) {
-
-        Coupons savedCoupon = couponService.addCoupon(couponDto);
-        return new ResponseEntity<>(savedCoupon, HttpStatus.CREATED);
+    public ResponseEntity<CouponsDTO> add(@Valid @RequestBody CouponsDTO dto) {
+        return ResponseEntity.ok(service.addCoupon(dto));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Coupons> getCouponById(@PathVariable Integer id) {
-        return ResponseEntity.ok(couponService.getCouponById(id));
+    public ResponseEntity<CouponsDTO> getById(@PathVariable Integer id) {
+        return ResponseEntity.ok(service.getCouponById(id));
+    }
+
+    @GetMapping("/code/{code}")
+    public ResponseEntity<CouponsDTO> getByCode(@PathVariable String code) {
+        return ResponseEntity.ok(service.getCouponByCode(code));
     }
 
     @GetMapping
-    public ResponseEntity<List<Coupons>> getAllCoupons() {
-        return ResponseEntity.ok(couponService.getAllCoupons());
-    }
-
-    @PostMapping("/apply/{code}")
-    public ResponseEntity<String> applyCoupon(
-            @PathVariable String code,
-            @RequestParam double orderAmount) {
-
-        double discount = couponService.applyCoupon(code, orderAmount);
-
-        return ResponseEntity.ok(
-                "Coupon applied! Discount: " + discount
-        );
+    public ResponseEntity<List<CouponsDTO>> getAll() {
+        return ResponseEntity.ok(service.getAllCoupons());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Coupons> updateCoupon(
+    public ResponseEntity<CouponsDTO> update(
             @PathVariable Integer id,
-            @Valid @RequestBody CouponsDTO couponDto) {
-
-        return ResponseEntity.ok(
-                couponService.updateCoupon(id, couponDto)
-        );
+            @Valid @RequestBody CouponsDTO dto) {
+        return ResponseEntity.ok(service.updateCoupon(id, dto));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteCoupon(@PathVariable Integer id) {
-        couponService.deleteCoupon(id);
-        return ResponseEntity.ok("Coupon deleted successfully");
+    public ResponseEntity<String> delete(@PathVariable Integer id) {
+        service.deleteCoupon(id);
+        return ResponseEntity.ok("Deleted successfully");
+    }
+
+    @GetMapping("/apply")
+    public ResponseEntity<Double> apply(
+            @RequestParam String code,
+            @RequestParam Double amount) {
+        return ResponseEntity.ok(service.applyCoupon(code, amount));
     }
 }

@@ -5,21 +5,25 @@ import java.time.LocalDate;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
 public class CouponsDTO {
 
 	private Integer couponId;
 
     @NotBlank(message = "Coupon code cannot be empty")
+    @Size(min = 3, max = 20)
+    @Pattern(regexp = "^[A-Z0-9]+$", message = "Coupon must be uppercase alphanumeric")
     private String couponCode;
 
-    @NotNull(message = "Discount amount is required")
-    @Positive(message = "Discount amount must be greater than 0")
+    @NotNull
+    @Positive
     private Double discountAmount;
 
-    @NotNull(message = "Expiry date is required")
-    @Future(message = "Expiry date must be in the future")
+    @NotNull
+    @Future
     private LocalDate expiryDate;
 
     public CouponsDTO() {}
