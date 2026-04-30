@@ -1,9 +1,15 @@
 package com.cg.entity;
-import jakarta.persistence.*;
-import java.util.List;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 
 @Entity
 public class Customer {
@@ -15,6 +21,10 @@ public class Customer {
     private String customerName;
     private String customerEmail;
     private String customerPhone;
+    
+    @OneToOne
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private User user;
 
     @OneToMany(mappedBy = "customer")
     @JsonIgnore
@@ -66,4 +76,11 @@ public class Customer {
     public void setAddresses(Set<DeliveryAddress> addresses) {
     	this.addresses = addresses; 
     	}
+	public User getUser() {
+		return user;
+	}
+	public void setUser(User user) {
+		this.user = user;
+	}
+    
 }
