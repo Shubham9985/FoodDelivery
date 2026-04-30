@@ -1,2 +1,15 @@
-/* You can add global styles to this file, and also import other style files */
-@import 'bootstrap/dist/css/bootstrap.min.css';
+@import url('../node_modules/bootstrap/dist/css/bootstrap.min.css');
+
+body {
+  background-color: #f8f9fa;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.nav-link {
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.nav-link:hover {
+  color: #fc8019 !important; /* Swiggy orange */
+}

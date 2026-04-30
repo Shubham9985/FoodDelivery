@@ -1,1 +1,17 @@
-<p>restaurant-list works!</p>
+<h2 class="fw-bold mb-4">Restaurants</h2>
+
+<div class="row g-4">
+  <div class="col-md-4" *ngFor="let r of restaurants">
+    <div class="card p-3 shadow-sm restaurant-card">
+
+      <h5>{{ r.name }}</h5>
+      <p class="text-muted">{{ r.cuisine }}</p>
+
+      <div class="d-flex justify-content-between">
+        <span>⭐ {{ r.rating }}</span>
+        <span>{{ r.deliveryTime }} mins</span>
+      </div>
+
+    </div>
+  </div>
+</div>
