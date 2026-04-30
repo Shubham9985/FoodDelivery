@@ -11,8 +11,8 @@ import com.cg.entity.Coupons;
 public interface CouponsRepository extends JpaRepository<Coupons, Integer> {
 
     // Find coupon by code
+
     Optional<Coupons> findByCouponCode(String couponCode);
 
-    // Check if coupon exists
     boolean existsByCouponCode(String couponCode);
 }
