@@ -7,19 +7,32 @@ import jakarta.validation.constraints.Size;
 
 public class RatingDTO {
 
-	@NotNull(message = "Rating is required")
-    @Min(value = 1, message = "Rating must be at least 1")
-    @Max(value = 5, message = "Rating cannot be more than 5")
+	private Integer ratingId;
+
+    @NotNull
+    @Min(1)
+    @Max(5)
     private Integer rating;
 
-    @Size(max = 255, message = "Review cannot exceed 255 characters")
+    @Size(max = 300)
     private String review;
 
-    @NotNull(message = "Order ID is required")
+    @NotNull
     private Integer orderId;
 
-    @NotNull(message = "Restaurant ID is required")
+    @NotNull
     private Integer restaurantId;
+
+    public RatingDTO() {}
+
+    public RatingDTO(Integer ratingId, Integer rating, String review,
+                     Integer orderId, Integer restaurantId) {
+        this.ratingId = ratingId;
+        this.rating = rating;
+        this.review = review;
+        this.orderId = orderId;
+        this.restaurantId = restaurantId;
+    }
     
     
 	public Integer getRating() {

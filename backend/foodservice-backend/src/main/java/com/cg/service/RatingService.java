@@ -2,17 +2,21 @@ package com.cg.service;
 
 import java.util.List;
 
-import com.cg.entity.Rating;
+import com.cg.dto.RatingDTO;
 
 public interface RatingService {
 
-    Rating addRating(Rating rating);
+	RatingDTO addRating(RatingDTO dto);
 
-    Rating getRatingById(Integer ratingId);
+    RatingDTO getRatingById(Integer id);
 
-    List<Rating> getRatingsByRestaurant(Integer restaurantId);
+    List<RatingDTO> getAllRatings();
 
-    Rating updateRating(Integer ratingId, Rating rating);
+    List<RatingDTO> getRatingsByRestaurant(Integer restaurantId);
 
-    void deleteRating(Integer ratingId);
+    RatingDTO updateRating(Integer id, RatingDTO dto);
+
+    void deleteRating(Integer id);
+
+    Double getAverageRating(Integer restaurantId);
 }
