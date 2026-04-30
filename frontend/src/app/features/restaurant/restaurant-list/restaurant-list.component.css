@@ -1,0 +1,11 @@
+.restaurant-card {
+  border: none;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: 0.3s;
+  cursor: pointer;
+}
+
+.restaurant-card:hover {
+  transform: scale(1.03);
+}
