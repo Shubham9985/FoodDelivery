@@ -3,21 +3,20 @@ package com.cg.service;
 import java.util.List;
 
 import com.cg.dto.CouponsDTO;
-import com.cg.entity.Coupons;
 
 public interface CouponsService {
 
-    Coupons addCoupon(CouponsDTO coupon);
+	CouponsDTO addCoupon(CouponsDTO dto);
 
-    Coupons getCouponById(Integer couponId);
+    CouponsDTO getCouponById(Integer id);
 
-    Coupons getCouponByCode(String couponCode);
+    CouponsDTO getCouponByCode(String code);
 
-    List<Coupons> getAllCoupons();
+    List<CouponsDTO> getAllCoupons();
 
-    Coupons updateCoupon(Integer couponId, CouponsDTO coupon);
+    CouponsDTO updateCoupon(Integer id, CouponsDTO dto);
 
-    void deleteCoupon(Integer couponId);
-    
+    void deleteCoupon(Integer id);
+
     Double applyCoupon(String code, Double orderAmount);
 }

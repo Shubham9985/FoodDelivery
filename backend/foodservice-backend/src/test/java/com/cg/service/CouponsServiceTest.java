@@ -44,6 +44,7 @@ public class CouponsServiceTest {
         coupon.setExpiryDate(LocalDate.now().plusDays(5));
     }
 
+    // ✅ 1. Add Coupon - Success
     @Test
     void testAddCouponSuccess() {
 
@@ -58,6 +59,7 @@ public class CouponsServiceTest {
         assertEquals("SAVE10", result.getCouponCode());
     }
 
+    // ❌ 2. Add Coupon - Duplicate
     @Test
     void testAddCouponDuplicate() {
 
@@ -68,6 +70,7 @@ public class CouponsServiceTest {
         assertThrows(DuplicateDataException.class, () -> service.addCoupon(dto));
     }
 
+    // ❌ 3. Add Coupon - Expired
     @Test
     void testAddCouponExpired() {
 
@@ -87,6 +90,7 @@ public class CouponsServiceTest {
         assertEquals("SAVE10", result.getCouponCode());
     }
 
+    // ❌ 5. Get Coupon by ID - Not Found
     @Test
     void testGetCouponByIdNotFound() {
 
@@ -95,6 +99,7 @@ public class CouponsServiceTest {
         assertThrows(IdNotFoundException.class, () -> service.getCouponById(1));
     }
 
+    // ✅ 6. Apply Coupon - Success
     @Test
     void testApplyCouponSuccess() {
 
@@ -105,6 +110,7 @@ public class CouponsServiceTest {
         assertEquals(100.0, discount);
     }
 
+    // ❌ 7. Apply Coupon - Invalid Code
     @Test
     void testApplyCouponInvalid() {
 
@@ -114,6 +120,7 @@ public class CouponsServiceTest {
                 () -> service.applyCoupon("SAVE10", 500.0));
     }
 
+    // ❌ 8. Apply Coupon - Expired
     @Test
     void testApplyCouponExpired() {
 
@@ -124,6 +131,7 @@ public class CouponsServiceTest {
                 () -> service.applyCoupon("SAVE10", 500.0));
     }
 
+    // ❌ 9. Apply Coupon - Invalid Order Amount
     @Test
     void testApplyCouponInvalidAmount() {
 
@@ -131,6 +139,7 @@ public class CouponsServiceTest {
                 () -> service.applyCoupon("SAVE10", -10.0));
     }
 
+    // ✅ 10. Discount > Order Amount
     @Test
     void testApplyCouponMaxDiscount() {
 
