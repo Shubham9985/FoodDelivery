@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.cg.config.JwtUtil;
 import com.cg.dto.RegisterDTO;
 import com.cg.entity.Customer;
 import com.cg.entity.User;
@@ -19,6 +20,9 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private UserRepository userRepo;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+    
     @Autowired
     private CustomerRepository customerRepo;
 
@@ -48,5 +52,18 @@ public class AuthServiceImpl implements AuthService {
         customerRepo.save(customer);
 
         return "User registered successfully";
+    }
+    
+    @Override
+	public String login(String email, String password) {
+
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!user.getPassword().equals(password)) {
+            throw new RuntimeException("Invalid password");
+        }
+        String token = jwtUtil.generateToken(email); 
+        return token;
     }
 }
