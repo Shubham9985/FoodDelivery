@@ -1,15 +1,17 @@
 package com.cg.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.cg.dto.RatingDTO;
 import com.cg.entity.Order;
 import com.cg.entity.Rating;
+import com.cg.entity.Restaurant;
 import com.cg.exceptions.DuplicateDataException;
 import com.cg.exceptions.IdNotFoundException;
-import com.cg.exceptions.InvalidInputException;
 import com.cg.repo.OrderRepository;
 import com.cg.repo.RatingRepository;
 import com.cg.repo.RestaurantRepository;
@@ -18,72 +20,111 @@ import com.cg.repo.RestaurantRepository;
 public class RatingServiceImpl implements RatingService {
 
     @Autowired
-    private RatingRepository ratingRepository;
+    private RatingRepository ratingRepo;
 
     @Autowired
-    private OrderRepository orderRepository;
+    private OrderRepository orderRepo;
 
     @Autowired
-    private RestaurantRepository restaurantRepository;
+    private RestaurantRepository restaurantRepo;
 
+    // 🔄 Mapping
+    private Rating mapToEntity(RatingDTO dto) {
+
+        Rating r = new Rating();
+        r.setRating(dto.getRating());
+        r.setReview(dto.getReview());
+
+        Order order = orderRepo.findById(dto.getOrderId())
+                .orElseThrow(() -> new IdNotFoundException("Order not found"));
+
+        Restaurant restaurant = restaurantRepo.findById(dto.getRestaurantId())
+                .orElseThrow(() -> new IdNotFoundException("Restaurant not found"));
+
+        r.setOrder(order);
+        r.setRestaurant(restaurant);
+
+        return r;
+    }
+
+    private RatingDTO mapToDTO(Rating r) {
+        return new RatingDTO(
+                r.getRatingId(),
+                r.getRating(),
+                r.getReview(),
+                r.getOrder().getOrderId(),
+                r.getRestaurant().getRestaurantId()
+        );
+    }
+
+    // ➕ Add
     @Override
-    public Rating addRating(Rating rating) {
-    	
-        if (ratingRepository.findByOrder_OrderId(
-                rating.getOrder().getOrderId()).isPresent()) {
+    public RatingDTO addRating(RatingDTO dto) {
+
+        if (ratingRepo.existsByOrderOrderId(dto.getOrderId())) {
             throw new DuplicateDataException("Order already rated");
         }
 
-        // Validate rating range
-        if (rating.getRating() < 1 || rating.getRating() > 5) {
-            throw new InvalidInputException("Rating must be between 1 and 5");
-        }
-
-        // Fetch and attach proper entities
-        Order order = orderRepository.findById(
-                rating.getOrder().getOrderId())
-                .orElseThrow(() -> new IdNotFoundException("Order not found"));
-
-        rating.setOrder(order);
-
-        rating.setRestaurant(
-                restaurantRepository.findById(
-                        rating.getRestaurant().getRestaurantId())
-                        .orElseThrow(() -> new IdNotFoundException("Restaurant not found"))
-        );
-
-        return ratingRepository.save(rating);
+        Rating saved = ratingRepo.save(mapToEntity(dto));
+        return mapToDTO(saved);
     }
 
+    // 🔍 Get by ID
     @Override
-    public Rating getRatingById(Integer ratingId) {
-        return ratingRepository.findById(ratingId)
+    public RatingDTO getRatingById(Integer id) {
+        Rating r = ratingRepo.findById(id)
                 .orElseThrow(() -> new IdNotFoundException("Rating not found"));
+        return mapToDTO(r);
     }
 
+    // 📄 Get All
     @Override
-    public List<Rating> getRatingsByRestaurant(Integer restaurantId) {
-        return ratingRepository.findByRestaurant_RestaurantId(restaurantId);
+    public List<RatingDTO> getAllRatings() {
+        return ratingRepo.findAll()
+                .stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
+    // 🍽️ Get by Restaurant
     @Override
-    public Rating updateRating(Integer ratingId, Rating rating) {
-
-        Rating existing = getRatingById(ratingId);
-
-        if (rating.getRating() < 1 || rating.getRating() > 5) {
-            throw new InvalidInputException("Rating must be between 1 and 5");
-        }
-
-        existing.setRating(rating.getRating());
-        existing.setReview(rating.getReview());
-
-        return ratingRepository.save(existing);
+    public List<RatingDTO> getRatingsByRestaurant(Integer restaurantId) {
+        return ratingRepo.findByRestaurantRestaurantId(restaurantId)
+                .stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
+    // ✏️ Update
     @Override
-    public void deleteRating(Integer ratingId) {
-        Rating rating = getRatingById(ratingId);
-        ratingRepository.delete(rating);
+    public RatingDTO updateRating(Integer id, RatingDTO dto) {
+
+        Rating existing = ratingRepo.findById(id)
+                .orElseThrow(() -> new IdNotFoundException("Rating not found"));
+
+        existing.setRating(dto.getRating());
+        existing.setReview(dto.getReview());
+
+        return mapToDTO(ratingRepo.save(existing));
+    }
+
+    // ❌ Delete
+    @Override
+    public void deleteRating(Integer id) {
+        Rating r = ratingRepo.findById(id)
+                .orElseThrow(() -> new IdNotFoundException("Rating not found"));
+        ratingRepo.delete(r);
+    }
+
+    // ⭐ Average Rating
+    @Override
+    public Double getAverageRating(Integer restaurantId) {
+
+        List<Rating> ratings = ratingRepo.findByRestaurantRestaurantId(restaurantId);
+
+        if (ratings.isEmpty()) {
+			return 0.0;
+		}
+
+        return ratings.stream()
+                .mapToInt(Rating::getRating)
+                .average()
+                .orElse(0.0);
     }
 }
