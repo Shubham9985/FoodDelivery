@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { MenuListComponent } from './features/menu/menu-list/menu-list.component';
 
 export const routes: Routes = [
   {
@@ -13,6 +14,7 @@ export const routes: Routes = [
       import('./features/restaurant/restaurant-list/restaurant-list.component')
         .then(c => c.RestaurantListComponent)
   },
+
   {
     path: '**',
     redirectTo: ''

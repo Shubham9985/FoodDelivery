@@ -19,33 +19,33 @@
     <a routerLink="/" routerLinkActive="active" class="nav-link d-inline">Home</a>
     <a routerLink="/restaurants" routerLinkActive="active" class="nav-link d-inline ">Restaurants</a>
     <!-- <a class="nav-link d-inline text-white" routerLink="/add-restaurant">Add</a> -->
+     <a class="nav-link d-inline" routerLink="/menu">Menu</a>
     <button class="btn btn-light btn-sm ms-2" (click)="openLogin()">
         Login
       </button>
   </div>
 </nav>
-<div *ngIf="showLogin" class="login-box">
+<div *ngIf="showLogin" class="overlay" (click)="closeLogin()">
 
-  <h4 *ngIf="isLogin">Login</h4>
-  <h4 *ngIf="!isLogin">Signup</h4>
+  <div class="login-box" (click)="$event.stopPropagation()">
 
-  <!-- USERNAME -->
-  <input class="form-control mb-2" placeholder="Username" [(ngModel)]="username">
+    <h4 *ngIf="isLogin">Login</h4>
+    <h4 *ngIf="!isLogin">Signup</h4>
 
-  <!-- PASSWORD -->
-  <input type="password" class="form-control mb-2" placeholder="Password" [(ngModel)]="password">
+    <input class="form-control mb-2" placeholder="Username" [(ngModel)]="username">
 
-  <!-- BUTTON -->
-  <button class="btn btn-primary w-100 mb-2">
-    {{ isLogin ? 'Login' : 'Signup' }}
-  </button>
+    <input type="password" class="form-control mb-2" placeholder="Password" [(ngModel)]="password">
 
-  <!-- SWITCH -->
-  <button class="btn btn-link w-100" (click)="toggleMode()">
-    {{ isLogin ? 'First time? Signup' : 'Already have account? Login' }}
-  </button>
+    <button class="btn btn-primary w-100 mb-2">
+      {{ isLogin ? 'Login' : 'Signup' }}
+    </button>
 
-  <!-- CLOSE -->
-  <button class="btn btn-danger w-100" (click)="closeLogin()">Close</button>
+    <button class="btn btn-link w-100" (click)="toggleMode()">
+      {{ isLogin ? 'First time? Signup' : 'Already have account? Login' }}
+    </button>
+
+    <button class="btn btn-danger w-100" (click)="closeLogin()">Close</button>
+
+  </div>
 
 </div>
