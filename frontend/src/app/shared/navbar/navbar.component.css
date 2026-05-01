@@ -1,0 +1,13 @@
+.login-box {
+  position: absolute;
+  right: 20px;
+  top: 70px;
+  width: 250px;
+  background: white;
+  padding: 15px;
+  border: 1px solid #ccc;
+  z-index: 1000;
+}
+.login-box {
+  border: 1px solid black;
+}
