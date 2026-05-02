@@ -15,6 +15,18 @@ public class RegisterDTO {
 
     @NotBlank
     private String phone;
+    
+    private String role = "Customer";
+    
+    
+
+	public String getRole() {
+		return role;
+	}
+
+	public void setRole(String role) {
+		this.role = role;
+	}
 
 	public String getEmail() {
 		return email;

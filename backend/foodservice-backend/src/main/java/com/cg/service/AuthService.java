@@ -4,5 +4,7 @@ import com.cg.dto.RegisterDTO;
 
 public interface AuthService {
 
-    String register(RegisterDTO dto);
+    public String register(RegisterDTO dto);
+    
+    public String login(String email, String password);
 }
