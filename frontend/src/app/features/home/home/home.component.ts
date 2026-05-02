@@ -5,6 +5,7 @@ import AOS from 'aos';
 
 import { MenuService } from '../../../services/menu.service';
 import { MenuItem } from '../../../models/menu-item.model';
+import { CartService } from '../../../services/cart.service';
 
 @Component({
   selector: 'app-home',
@@ -19,7 +20,11 @@ export class HomeComponent implements AfterViewInit, OnInit {
 
   menuItems: MenuItem[] = [];
 
-  constructor(private menuService: MenuService) {}
+  constructor(
+  private menuService: MenuService,
+  private cartService: CartService
+) {}
+
 
   // ✅ AOS animation
   ngAfterViewInit(): void {
@@ -40,7 +45,9 @@ export class HomeComponent implements AfterViewInit, OnInit {
   }
 
   // ✅ Cart handler
-  addToCart(item: MenuItem): void {
-    console.log('Add to cart:', item);
-  }
+  addToCart(item: MenuItem) {
+  this.cartService.addItem(1, item.itemId, 1).subscribe(() => {
+    console.log('Added to cart');
+  });
+}
 }
