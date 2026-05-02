@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cg.dto.RegisterDTO;
 import com.cg.entity.Customer;
 import com.cg.entity.User;
-import com.cg.enums.Role;
 import com.cg.repo.CustomerRepository;
 import com.cg.repo.UserRepository;
 
@@ -30,7 +29,7 @@ public class UserController {
 	    User user = new User();
 	    user.setEmail(dto.getEmail());
 	    user.setPassword(dto.getPassword());
-	    user.setRole(Role.CUSTOMER);
+	    user.setRole(dto.getRole());
 
 	    user = userRepository.save(user);
 

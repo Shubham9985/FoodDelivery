@@ -21,26 +21,27 @@ public class SecurityConfig {
 
         http.csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-            		// ✅ Swagger FIRST
+            		// Swagger FIRST
                     .requestMatchers(
                             "/v3/api-docs/**",
                             "/swagger-ui/**",
                             "/swagger-ui.html"
                     ).permitAll()
 
-                    // ✅ Auth endpoints
+                    // Auth endpoints
                     .requestMatchers("/auth/**").permitAll()
+                    .requestMatchers("/api/auth/**").permitAll()
 
-                    // ✅ Public APIs
+                    // Public APIs
                     .requestMatchers("/restaurants/**", "/menu/**").permitAll()
 
-                    // ✅ Protected APIs
+                    // Protected APIs
                     .requestMatchers(HttpMethod.POST, "/orders/**").authenticated()
 
-                    // ✅ Admin
+                    // Admin
                     .requestMatchers("/admin/**").hasRole("ADMIN")
 
-                    // ✅ Everything else
+                    // Everything else
                     .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
