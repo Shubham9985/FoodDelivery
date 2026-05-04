@@ -30,9 +30,16 @@
         {{ loading ? 'Signing in...' : 'Sign In' }}
       </button>
 
-      <p class="switch">
+      <p class="switch" *ngIf="!adminLoginMode">
         Don't have an account?
         <a (click)="toggleMode()">Sign up</a>
+      </p>
+
+      <p class="switch admin-link">
+        {{ adminLoginMode ? 'Admin login active.' : 'Want to login as admin?' }}
+        <a (click)="toggleAdminLoginMode()">
+          {{ adminLoginMode ? 'Switch to customer login' : 'Use admin login' }}
+        </a>
       </p>
     </form>
 

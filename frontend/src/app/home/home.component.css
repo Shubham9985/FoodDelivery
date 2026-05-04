@@ -460,3 +460,116 @@
   color: #ff4757;
   background: #fff5f3;
 }
+
+/* HERO MAIN */
+.hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 60px;
+  background: linear-gradient(135deg, #ed602d, #f79b4f);
+  color: white;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* LEFT CONTENT */
+.hero-content {
+  max-width: 50%;
+}
+
+.hero h2 {
+  font-size: 2.5rem;
+  font-weight: bold;
+}
+
+.hero-sub {
+  margin-top: 10px;
+  font-size: 1.1rem;
+}
+
+/* SEARCH BAR */
+.search-bar {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  background: white;
+  padding: 8px;
+  border-radius: 8px;
+  align-items: center;
+}
+
+.search-bar input {
+  border: none;
+  outline: none;
+  flex: 1;
+  padding: 8px;
+}
+
+.search-bar button {
+  background: black;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 6px;
+}
+
+/* FILTER BUTTON */
+.filter-icon-btn {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+}
+
+.filter-icon-btn.active {
+  color: #f97316;
+}
+
+/* FILTER PANEL */
+.filter-panel {
+  margin-top: 15px;
+  background: white;
+  color: black;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+.filter-group {
+  margin-bottom: 10px;
+}
+
+.filter-group label {
+  font-weight: 600;
+  display: block;
+}
+
+/* RESET BUTTON */
+.reset-btn {
+  background: #f97316;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+}
+
+/* RIGHT IMAGE */
+.hero-images img {
+  width: 250px;
+  border-radius: 12px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .hero {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .hero-content {
+    max-width: 100%;
+  }
+
+  .hero-images img {
+    margin-top: 20px;
+  }
+}

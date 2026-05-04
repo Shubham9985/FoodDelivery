@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
+import { isBrowser } from '../utils/browser-storage';
 
 @Component({
   selector: 'app-auth',
@@ -13,6 +14,7 @@ import { AuthService } from '../auth.service';
 })
 export class AuthComponent {
   isLoginMode = true;
+  adminLoginMode = false;
   loading = false;
   message = '';
   messageType: 'success' | 'error' | '' = '';
@@ -41,6 +43,14 @@ export class AuthComponent {
 
   toggleMode(): void {
     this.isLoginMode = !this.isLoginMode;
+    this.adminLoginMode = false;
+    this.message = '';
+    this.messageType = '';
+  }
+
+  toggleAdminLoginMode(): void {
+    this.adminLoginMode = !this.adminLoginMode;
+    this.isLoginMode = true;
     this.message = '';
     this.messageType = '';
   }
@@ -54,9 +64,18 @@ export class AuthComponent {
     this.authService.login(this.loginForm.value).subscribe({
       next: (res) => {
         this.loading = false;
+
+        if (this.adminLoginMode && res?.role !== 'ADMIN') {
+          this.messageType = 'error';
+          this.message = 'Admin credentials are required for admin login.';
+          return;
+        }
+
         this.messageType = 'success';
         this.message = 'Login successful!';
-        localStorage.setItem('user', JSON.stringify(res));
+        if (isBrowser()) {
+          window.localStorage.setItem('user', JSON.stringify(res));
+        }
 
         // Role-based redirect
         if (res?.role === 'ADMIN') {
