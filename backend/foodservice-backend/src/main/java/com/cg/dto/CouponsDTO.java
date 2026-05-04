@@ -1,7 +1,10 @@
 package com.cg.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -19,8 +22,10 @@ public class CouponsDTO {
     private String couponCode;
 
     @NotNull
+    @DecimalMin(value = "0.01", message = "Discount must be greater than 0")
+    @Digits(integer = 8, fraction = 2)
     @Positive
-    private Double discountAmount;
+    private BigDecimal discountAmount;
 
     @NotNull
     @Future
@@ -28,7 +33,7 @@ public class CouponsDTO {
 
     public CouponsDTO() {}
 
-    public CouponsDTO(Integer couponId, String couponCode, Double discountAmount, LocalDate expiryDate) {
+    public CouponsDTO(Integer couponId, String couponCode, BigDecimal discountAmount, LocalDate expiryDate) {
         this.couponId = couponId;
         this.couponCode = couponCode;
         this.discountAmount = discountAmount;
@@ -51,11 +56,11 @@ public class CouponsDTO {
         this.couponCode = couponCode;
     }
 
-    public Double getDiscountAmount() {
+    public BigDecimal getDiscountAmount() {
         return discountAmount;
     }
 
-    public void setDiscountAmount(Double discountAmount) {
+    public void setDiscountAmount(BigDecimal discountAmount) {
         this.discountAmount = discountAmount;
     }
 
