@@ -8,10 +8,13 @@ import com.cg.exceptions.IdNotFoundException;
 import com.cg.exceptions.NameNotFoundException;
 import com.cg.exceptions.PhoneNumberNotFoundException;
 import com.cg.repo.RestaurantRepository;
+import com.cg.service.RestaurantService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,27 +29,21 @@ public class RestaurantServiceImpl implements RestaurantService {
         this.restaurantRepository = restaurantRepository;
     }
 
-    // =========================================================================
-    // HELPER — Entity → ResponseDTO
-    // Converts Restaurant entity to RestaurantResponseDTO.
-    // Relationship lists are mapped to ID lists to prevent infinite recursion.
-    // =========================================================================
-
     private RestaurantResponseDTO toResponseDTO(Restaurant restaurant) {
-        List<Integer> menuItemIds = restaurant.getMenuItems()
-                .stream()
-                .map(m -> m.getItemId())
-                .collect(Collectors.toList());
+        List<Integer> menuItemIds = restaurant.getMenuItems() == null ? List.of() :
+                restaurant.getMenuItems().stream()
+                        .map(m -> m.getItemId())
+                        .collect(Collectors.toList());
 
-        List<Integer> orderIds = restaurant.getOrders()
-                .stream()
-                .map(o -> o.getOrderId())
-                .collect(Collectors.toList());
+        List<Integer> orderIds = restaurant.getOrders() == null ? List.of() :
+                restaurant.getOrders().stream()
+                        .map(o -> o.getOrderId())
+                        .collect(Collectors.toList());
 
-        List<Integer> ratingIds = restaurant.getRatings()
-                .stream()
-                .map(r -> r.getRatingId())
-                .collect(Collectors.toList());
+        List<Integer> ratingIds = restaurant.getRatings() == null ? List.of() :
+                restaurant.getRatings().stream()
+                        .map(r -> r.getRatingId())
+                        .collect(Collectors.toList());
 
         return new RestaurantResponseDTO(
                 restaurant.getRestaurantId(),
@@ -59,29 +56,20 @@ public class RestaurantServiceImpl implements RestaurantService {
         );
     }
 
-    // =========================================================================
-    // HELPER — RequestDTO → Entity
-    // Maps only scalar fields. Relationships are managed separately.
-    // =========================================================================
-
     private Restaurant toEntity(RestaurantRequestDTO dto) {
         Restaurant restaurant = new Restaurant();
-        restaurant.setRestaurantId(dto.getRestaurantId());
+        // restaurantId is auto-generated — do NOT set from DTO
         restaurant.setRestaurantName(dto.getRestaurantName());
         restaurant.setRestaurantAddress(dto.getRestaurantAddress());
         restaurant.setRestaurantPhone(dto.getRestaurantPhone());
         return restaurant;
     }
 
-    // =========================================================================
-    // CRUD
-    // =========================================================================
-
     @Override
     public RestaurantResponseDTO addRestaurant(RestaurantRequestDTO requestDTO) {
-        // restaurantId is manually supplied (no @GeneratedValue on entity)
-        if (restaurantRepository.existsById(requestDTO.getRestaurantId())) {
-            throw new DuplicateDataException("Restaurant with ID " + requestDTO.getRestaurantId() + " already exists.");
+        // Check duplicate phone (since ID is auto-generated)
+        if (restaurantRepository.findByRestaurantPhone(requestDTO.getRestaurantPhone()).isPresent()) {
+            throw new DuplicateDataException("Restaurant with phone " + requestDTO.getRestaurantPhone() + " already exists.");
         }
         Restaurant restaurant = toEntity(requestDTO);
         Restaurant saved = restaurantRepository.save(restaurant);
@@ -110,7 +98,6 @@ public class RestaurantServiceImpl implements RestaurantService {
         Restaurant existing = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new IdNotFoundException("Restaurant not found with ID: " + restaurantId));
 
-        // Update only scalar fields; relationships are untouched
         existing.setRestaurantName(requestDTO.getRestaurantName());
         existing.setRestaurantAddress(requestDTO.getRestaurantAddress());
         existing.setRestaurantPhone(requestDTO.getRestaurantPhone());
@@ -126,10 +113,6 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
         restaurantRepository.deleteById(restaurantId);
     }
-
-    // =========================================================================
-    // DERIVED QUERY METHODS
-    // =========================================================================
 
     @Override
     @Transactional(readOnly = true)
@@ -165,10 +148,6 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .collect(Collectors.toList());
     }
 
-    // =========================================================================
-    // JPQL / RELATIONSHIP-BASED METHODS
-    // =========================================================================
-
     @Override
     @Transactional(readOnly = true)
     public List<RestaurantResponseDTO> getRestaurantsHavingMenuItems() {
@@ -197,7 +176,7 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<RestaurantResponseDTO> getRestaurantsByMenuItemPriceRange(Double minPrice, Double maxPrice) {
+    public List<RestaurantResponseDTO> getRestaurantsByMenuItemPriceRange(BigDecimal minPrice, BigDecimal maxPrice) {
         return restaurantRepository.findByMenuItemPriceBetween(minPrice, maxPrice)
                 .stream()
                 .map(this::toResponseDTO)
@@ -238,10 +217,6 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }
-
-    // =========================================================================
-    // NATIVE QUERY METHODS — raw Object[] returned as-is to Controller
-    // =========================================================================
 
     @Override
     @Transactional(readOnly = true)

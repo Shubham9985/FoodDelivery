@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { AdminService } from '../../services/admin.service';
+import { AdminService } from '../../services/admin-services/admin.service';
 
 interface CustomerRow {
   customerId: number;
@@ -22,7 +22,7 @@ interface CustomerRow {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './admin-customer.component.html',
-  styleUrls: ['./admin-customer.component.css']
+  styleUrls: ['./admin-customer.component.css'],
 })
 export class AdminCustomerComponent implements OnInit {
   customers: CustomerRow[] = [];
@@ -48,31 +48,45 @@ export class AdminCustomerComponent implements OnInit {
   loadAll(): void {
     this.loading = true;
     forkJoin({
-      customers: this.adminService.getAllCustomers().pipe(catchError(() => of([]))),
+      customers: this.adminService
+        .getAllCustomers()
+        .pipe(catchError(() => of([]))),
       orders: this.adminService.getAllOrders().pipe(catchError(() => of([]))),
-      menuItems: this.adminService.getAllMenuItems().pipe(catchError(() => of([])))
+      menuItems: this.adminService
+        .getAllMenuItems()
+        .pipe(catchError(() => of([]))),
     }).subscribe({
       next: (res) => {
         res.menuItems.forEach((it: any) => {
-          this.menuItemsMap[it.itemId] = { name: it.itemName, price: it.itemPrice };
+          this.menuItemsMap[it.itemId] = {
+            name: it.itemName,
+            price: it.itemPrice,
+          };
         });
         this.allOrders = res.orders || [];
-        this.customers = (res.customers || []).map((c: any) => this.buildCustomerRow(c));
+        this.customers = (res.customers || []).map((c: any) =>
+          this.buildCustomerRow(c),
+        );
         this.loading = false;
       },
       error: (err) => {
         this.loading = false;
-        this.showMessage(err.error?.message || 'Failed to load customers', 'error');
-      }
+        this.showMessage(
+          err.error?.message || 'Failed to load customers',
+          'error',
+        );
+      },
     });
   }
 
   private buildCustomerRow(c: any): CustomerRow {
-    const customerOrders = this.allOrders.filter(o => o.customerId === c.customerId);
+    const customerOrders = this.allOrders.filter(
+      (o) => o.customerId === c.customerId,
+    );
     let totalSpent = 0;
     let lastOrderDate: string | null = null;
 
-    customerOrders.forEach(o => {
+    customerOrders.forEach((o) => {
       if (o.orderStatus !== 'CANCELLED' && o.items) {
         o.items.forEach((it: any) => {
           const price = this.menuItemsMap[it.itemId]?.price || 0;
@@ -93,7 +107,7 @@ export class AdminCustomerComponent implements OnInit {
       orderCount: customerOrders.length,
       totalSpent,
       lastOrderDate,
-      addressCount: c.addresses ? c.addresses.length : 0
+      addressCount: c.addresses ? c.addresses.length : 0,
     };
   }
 
@@ -102,10 +116,11 @@ export class AdminCustomerComponent implements OnInit {
     let list = this.customers;
 
     if (term) {
-      list = list.filter(c =>
-        c.customerName.toLowerCase().includes(term) ||
-        c.customerEmail.toLowerCase().includes(term) ||
-        c.customerPhone.includes(term)
+      list = list.filter(
+        (c) =>
+          c.customerName.toLowerCase().includes(term) ||
+          c.customerEmail.toLowerCase().includes(term) ||
+          c.customerPhone.includes(term),
       );
     }
 
@@ -136,7 +151,7 @@ export class AdminCustomerComponent implements OnInit {
   }
 
   get activeCustomers(): number {
-    return this.customers.filter(c => c.orderCount > 0).length;
+    return this.customers.filter((c) => c.orderCount > 0).length;
   }
 
   get totalRevenue(): number {
@@ -146,7 +161,7 @@ export class AdminCustomerComponent implements OnInit {
   viewDetails(customer: CustomerRow): void {
     this.selectedCustomer = customer;
     this.selectedCustomerOrders = this.allOrders
-      .filter(o => o.customerId === customer.customerId)
+      .filter((o) => o.customerId === customer.customerId)
       .sort((a, b) => (b.orderDate || '').localeCompare(a.orderDate || ''));
   }
 
@@ -169,19 +184,28 @@ export class AdminCustomerComponent implements OnInit {
 
   deleteCustomer(customer: CustomerRow, event: Event): void {
     event.stopPropagation();
-    if (!confirm(`Delete customer "${customer.customerName}"? This cannot be undone.`)) return;
+    if (
+      !confirm(
+        `Delete customer "${customer.customerName}"? This cannot be undone.`,
+      )
+    )
+      return;
     this.adminService.deleteCustomer(customer.customerId).subscribe({
       next: () => {
         this.showMessage('Customer deleted', 'success');
         this.loadAll();
       },
-      error: (err) => this.showMessage(err.error?.message || 'Delete failed', 'error')
+      error: (err) =>
+        this.showMessage(err.error?.message || 'Delete failed', 'error'),
     });
   }
 
   private showMessage(text: string, type: 'success' | 'error'): void {
     this.message = text;
     this.messageType = type;
-    setTimeout(() => { this.message = ''; this.messageType = ''; }, 2500);
+    setTimeout(() => {
+      this.message = '';
+      this.messageType = '';
+    }, 2500);
   }
 }

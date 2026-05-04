@@ -1,7 +1,9 @@
 package com.cg.entity;
 
+import java.math.BigDecimal;
 import java.util.List;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -19,7 +21,7 @@ public class MenuItems {
 
     private String itemName;
     private String itemDescription;
-    private Double itemPrice;
+    private BigDecimal itemPrice;
 
     @ManyToOne
     @JoinColumn(name = "restaurant_id")
@@ -27,6 +29,18 @@ public class MenuItems {
 
     @OneToMany(mappedBy = "menuItem")
     private List<OrderItem> orderItems;
+    
+    
+    @Column(name = "item_image_url", length = 500)
+    private String itemImageUrl;
+
+	public String getItemImageUrl() {
+		return itemImageUrl;
+	}
+
+	public void setItemImageUrl(String itemImageUrl) {
+		this.itemImageUrl = itemImageUrl;
+	}
 
 	public Integer getItemId() {
 		return itemId;
@@ -52,11 +66,11 @@ public class MenuItems {
 		this.itemDescription = itemDescription;
 	}
 
-	public Double getItemPrice() {
+	public BigDecimal getItemPrice() {
 		return itemPrice;
 	}
 
-	public void setItemPrice(Double itemPrice) {
+	public void setItemPrice(BigDecimal itemPrice) {
 		this.itemPrice = itemPrice;
 	}
 

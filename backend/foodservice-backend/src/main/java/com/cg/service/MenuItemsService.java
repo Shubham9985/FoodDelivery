@@ -2,12 +2,13 @@ package com.cg.service;
 
 import com.cg.dto.MenuItemsDTO;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface MenuItemsService {
 
-    // ─── CRUD ─────────────────────────────────────────────────────────────────
-
+    // ─── CRUD ──────────────────────────────────────────── 
+	
     MenuItemsDTO.Response addMenuItem(MenuItemsDTO.Request requestDTO);
 
     MenuItemsDTO.Response getMenuItemById(Integer itemId);
@@ -24,11 +25,11 @@ public interface MenuItemsService {
 
     List<MenuItemsDTO.Response> searchMenuItemsByName(String keyword);
 
-    List<MenuItemsDTO.Response> getMenuItemsByMaxPrice(Double price);
+    List<MenuItemsDTO.Response> getMenuItemsByMaxPrice(BigDecimal price);
 
-    List<MenuItemsDTO.Response> getMenuItemsByMinPrice(Double price);
+    List<MenuItemsDTO.Response> getMenuItemsByMinPrice(BigDecimal price);
 
-    List<MenuItemsDTO.Response> getMenuItemsByPriceRange(Double minPrice, Double maxPrice);
+    List<MenuItemsDTO.Response> getMenuItemsByPriceRange(BigDecimal minPrice, BigDecimal maxPrice);
 
     // ─── Derived Query Methods — via Restaurant FK ────────────────────────────
 
@@ -38,7 +39,7 @@ public interface MenuItemsService {
 
     List<MenuItemsDTO.Response> searchMenuItemsByNameInRestaurant(Integer restaurantId, String keyword);
 
-    List<MenuItemsDTO.Response> getMenuItemsByPriceRangeInRestaurant(Integer restaurantId, Double minPrice, Double maxPrice);
+    List<MenuItemsDTO.Response> getMenuItemsByPriceRangeInRestaurant(Integer restaurantId, BigDecimal minPrice, BigDecimal maxPrice);
 
     boolean checkMenuItemExistsInRestaurant(String itemName, Integer restaurantId);
 
