@@ -1,0 +1,29 @@
+<div class="container mt-4">
+  <h2>Add Restaurant</h2>
+
+  <form (ngSubmit)="submit()">
+
+    <div class="mb-3">
+      <label>ID</label>
+      <input class="form-control" [(ngModel)]="form.restaurantId" name="id">
+    </div>
+
+    <div class="mb-3">
+      <label>Name</label>
+      <input class="form-control" [(ngModel)]="form.restaurantName" name="name">
+    </div>
+
+    <div class="mb-3">
+      <label>Address</label>
+      <input class="form-control" [(ngModel)]="form.restaurantAddress" name="address">
+    </div>
+
+    <div class="mb-3">
+      <label>Phone</label>
+      <input class="form-control" [(ngModel)]="form.restaurantPhone" name="phone">
+    </div>
+
+    <button class="btn btn-success">Submit</button>
+
+  </form>
+</div>
