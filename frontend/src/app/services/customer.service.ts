@@ -1,6 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { getStoredUser, isBrowser } from '../utils/browser-storage';
 
 @Injectable({ providedIn: 'root' })
 export class CustomerService {
@@ -9,12 +10,12 @@ export class CustomerService {
   constructor(private http: HttpClient) {}
 
   private authHeaders(): HttpHeaders {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const user = getStoredUser() || {};
     return new HttpHeaders({ Authorization: `Bearer ${user.token || ''}` });
   }
 
   getCurrentCustomerId(): number {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const user = getStoredUser() || {};
     return user.customerId || 1;
   }
 
