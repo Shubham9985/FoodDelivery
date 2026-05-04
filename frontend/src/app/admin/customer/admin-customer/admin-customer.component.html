@@ -1,0 +1,176 @@
+
+<div class="admin-page">
+  <div class="page-header">
+    <div>
+      <h2>Customers</h2>
+      <p class="sub">View customer activity, order history, and spending</p>
+    </div>
+    <div class="filter-group">
+      <input
+        type="text"
+        class="search-input"
+        [(ngModel)]="searchTerm"
+        placeholder="Search by name, email, or phone..." />
+      <label>Sort:</label>
+      <select [(ngModel)]="sortBy">
+        <option value="orders">Most Orders</option>
+        <option value="spent">Highest Spent</option>
+        <option value="recent">Recently Active</option>
+        <option value="name">Name (A-Z)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="toast" [class.success]="messageType==='success'" [class.error]="messageType==='error'" *ngIf="message">
+    {{ message }}
+  </div>
+
+  <!-- SUMMARY STATS -->
+  <div class="summary-grid" *ngIf="!loading && customers.length > 0">
+    <div class="summary-card">
+      <span class="summary-icon">👥</span>
+      <div>
+        <p class="summary-label">Total Customers</p>
+        <p class="summary-value">{{ totalCustomers }}</p>
+      </div>
+    </div>
+    <div class="summary-card">
+      <span class="summary-icon">✅</span>
+      <div>
+        <p class="summary-label">Active Customers</p>
+        <p class="summary-value">{{ activeCustomers }}</p>
+      </div>
+    </div>
+    <div class="summary-card">
+      <span class="summary-icon">📦</span>
+      <div>
+        <p class="summary-label">Total Orders</p>
+        <p class="summary-value">{{ allOrders.length }}</p>
+      </div>
+    </div>
+    <div class="summary-card">
+      <span class="summary-icon">💰</span>
+      <div>
+        <p class="summary-label">Total Revenue</p>
+        <p class="summary-value">₹{{ totalRevenue | number:'1.2-2' }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading customers...</div>
+
+  <div *ngIf="!loading && filteredCustomers.length === 0" class="empty">
+    No customers found.
+  </div>
+
+  <!-- CUSTOMERS TABLE -->
+  <div class="customers-table-wrap" *ngIf="!loading && filteredCustomers.length > 0">
+    <table class="customers-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Contact</th>
+          <th class="num">Orders</th>
+          <th class="num">Total Spent</th>
+          <th class="num">Addresses</th>
+          <th>Last Order</th>
+          <th class="actions-col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of filteredCustomers" class="customer-row" (click)="viewDetails(c)">
+          <td>#{{ c.customerId }}</td>
+          <td>
+            <div class="cust-name">{{ c.customerName }}</div>
+          </td>
+          <td>
+            <div class="cust-contact">
+              <span>{{ c.customerEmail }}</span>
+              <span class="muted">{{ c.customerPhone }}</span>
+            </div>
+          </td>
+          <td class="num">
+            <span class="count-badge" [class.zero]="c.orderCount === 0">
+              {{ c.orderCount }}
+            </span>
+          </td>
+          <td class="num strong">₹{{ c.totalSpent | number:'1.2-2' }}</td>
+          <td class="num">{{ c.addressCount }}</td>
+          <td>
+            <span *ngIf="c.lastOrderDate">{{ c.lastOrderDate | date:'mediumDate' }}</span>
+            <span *ngIf="!c.lastOrderDate" class="muted">No orders</span>
+          </td>
+          <td class="actions-col">
+            <button class="action-btn" (click)="viewDetails(c); $event.stopPropagation()">View</button>
+            <button class="delete-btn" (click)="deleteCustomer(c, $event)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- DETAILS MODAL -->
+  <div class="modal-overlay" *ngIf="selectedCustomer" (click)="closeDetails()">
+    <div class="modal modal-wide" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3>{{ selectedCustomer.customerName }}</h3>
+          <p class="modal-sub">Customer #{{ selectedCustomer.customerId }}</p>
+        </div>
+        <button class="close-btn" (click)="closeDetails()">×</button>
+      </div>
+
+      <div class="detail-grid">
+        <div class="detail-item">
+          <span class="detail-label">Email</span>
+          <span class="detail-value">{{ selectedCustomer.customerEmail }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Phone</span>
+          <span class="detail-value">{{ selectedCustomer.customerPhone }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Total Orders</span>
+          <span class="detail-value strong">{{ selectedCustomer.orderCount }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Total Spent</span>
+          <span class="detail-value strong">₹{{ selectedCustomer.totalSpent | number:'1.2-2' }}</span>
+        </div>
+      </div>
+
+      <h4 class="orders-heading">Order History</h4>
+      <div class="empty small" *ngIf="selectedCustomerOrders.length === 0">
+        This customer has not placed any orders yet.
+      </div>
+
+      <div class="customer-orders" *ngIf="selectedCustomerOrders.length > 0">
+        <div class="customer-order-card" *ngFor="let o of selectedCustomerOrders">
+          <div class="co-header">
+            <div>
+              <strong>Order #{{ o.orderId }}</strong>
+              <span class="co-date">{{ o.orderDate | date:'medium' }}</span>
+            </div>
+            <span class="status-badge" [ngClass]="(o.orderStatus || '').toLowerCase()">
+              {{ o.orderStatus }}
+            </span>
+          </div>
+          <div class="co-items" *ngIf="o.items && o.items.length > 0">
+            <span class="item-chip" *ngFor="let it of o.items">
+              {{ getItemName(it.itemId) }} × {{ it.quantity }}
+            </span>
+          </div>
+          <div class="co-footer">
+            <span class="muted">Restaurant #{{ o.restaurantId }}</span>
+            <span class="strong">₹{{ getOrderTotal(o) | number:'1.2-2' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="cancel-btn" (click)="closeDetails()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
