@@ -3,6 +3,7 @@ package com.cg.service;
 import com.cg.dto.RestaurantRequestDTO;
 import com.cg.dto.RestaurantResponseDTO;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface RestaurantService {
@@ -37,7 +38,7 @@ public interface RestaurantService {
 
     List<RestaurantResponseDTO> getRestaurantsByMenuItemName(String keyword);
 
-    List<RestaurantResponseDTO> getRestaurantsByMenuItemPriceRange(Double minPrice, Double maxPrice);
+    List<RestaurantResponseDTO> getRestaurantsByMenuItemPriceRange(BigDecimal minPrice, BigDecimal maxPrice);
 
     List<RestaurantResponseDTO> getRestaurantsHavingOrders();
 
