@@ -1,0 +1,91 @@
+<div class="admin-container">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">🍽️</span>
+      <span class="brand-text">Admin Panel</span>
+    </div>
+
+    <nav class="side-nav">
+      <a routerLink="/admin" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active" class="side-link">
+        <span class="icon">📊</span> Dashboard
+      </a>
+      <a routerLink="/admin/restaurants" routerLinkActive="active" class="side-link">
+        <span class="icon">🏪</span> Restaurants
+      </a>
+      <a routerLink="/admin/menu-items" routerLinkActive="active" class="side-link">
+        <span class="icon">🍕</span> Menu Items
+      </a>
+      <a routerLink="/admin/drivers" routerLinkActive="active" class="side-link">
+        <span class="icon">🚴</span> Drivers
+      </a>
+      <a routerLink="/admin/coupons" routerLinkActive="active" class="side-link">
+        <span class="icon">🎟️</span> Coupons
+      </a>
+      <a routerLink="/admin/orders" routerLinkActive="active" class="side-link">
+        <span class="icon">📦</span> Orders
+      </a>
+      <a routerLink="/admin/customers" routerLinkActive="active" class="side-link">
+      <span class="icon">👥</span> Customers
+      </a>
+    </nav>
+
+    <button class="logout-btn" (click)="logout()">Logout</button>
+  </aside>
+
+  <main class="main-content">
+    <header class="topbar">
+      <h2>Welcome, {{ adminName }}</h2>
+      <p class="topbar-sub">Manage your food delivery platform</p>
+    </header>
+
+    <!-- Show stats only on the dashboard root -->
+    <section class="dashboard-overview" *ngIf="isRootPath">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-icon">🏪</span>
+          <div>
+            <p class="stat-label">Restaurants</p>
+            <p class="stat-value">{{ stats.restaurants }}</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon">🍕</span>
+          <div>
+            <p class="stat-label">Menu Items</p>
+            <p class="stat-value">{{ stats.menuItems }}</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon">🚴</span>
+          <div>
+            <p class="stat-label">Drivers</p>
+            <p class="stat-value">{{ stats.drivers }}</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon">🎟️</span>
+          <div>
+            <p class="stat-label">Coupons</p>
+            <p class="stat-value">{{ stats.coupons }}</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon">📦</span>
+          <div>
+            <p class="stat-label">Orders</p>
+            <p class="stat-value">{{ stats.orders }}</p>
+          </div>
+        </div>
+        <div class="stat-card">
+      <span class="stat-icon">👥</span>
+       <div>
+         <p class="stat-label">Customers</p>
+        <p class="stat-value">{{ stats.customers }}</p>
+      </div>
+</div>
+      </div>
+    </section>
+
+    <router-outlet></router-outlet>
+  </main>
+</div>
