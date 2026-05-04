@@ -1,12 +1,10 @@
 package com.cg.service;
-
 import com.cg.dto.CartItemDTO;
 import com.cg.dto.CartResponseDTO;
 import com.cg.entity.*;
 import com.cg.exceptions.CartEmptyException;
 import com.cg.exceptions.CartNotFoundException;
 import com.cg.exceptions.CustomerNotFoundException;
-import com.cg.exceptions.IdNotFoundException;
 import com.cg.exceptions.InvalidQuantityException;
 import com.cg.exceptions.ItemNotFoundException;
 import com.cg.exceptions.RestaurantNotFoundException;
