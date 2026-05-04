@@ -1,0 +1,67 @@
+<div class="orders-container">
+  <header class="navbar">
+    <button class="logo-btn" routerLink="/home">
+      <span class="logo-mark">🍔</span>
+      <span class="logo-text">FoodieHub</span>
+    </button>
+    <nav>
+      <button class="nav-btn" routerLink="/home">Home</button>
+      <button class="nav-btn" routerLink="/cart">Cart</button>
+      <button class="nav-btn active" routerLink="/orders">My Orders</button>
+      <button class="nav-btn" routerLink="/addresses">Addresses</button>
+      <button class="nav-btn" routerLink="/profile">Profile</button>
+    </nav>
+  </header>
+
+  <div class="orders-wrap">
+    <h2 class="page-title">My Orders</h2>
+
+    <div *ngIf="message" class="alert" [class.success]="messageType === 'success'" [class.error]="messageType === 'error'">
+      {{ message }}
+    </div>
+
+    <div *ngIf="loading" class="loading">Loading orders...</div>
+
+    <div *ngIf="!loading && orders.length === 0" class="empty">
+      <p>📋 You haven't placed any orders yet</p>
+      <a routerLink="/home" class="browse-btn">Order Now</a>
+    </div>
+
+    <div class="orders-list" *ngIf="!loading && orders.length > 0">
+      <div class="order-card" *ngFor="let order of orders">
+  <div class="order-header">
+    <div>
+      <h4>Order #{{ order.orderId }}</h4>
+      <p class="date">{{ order.orderDate | date:'medium' }}</p>
+    </div>
+    <span class="status" [ngClass]="statusClass(order.orderStatus)">{{ order.orderStatus }}</span>
+  </div>
+
+  <div class="order-body">
+    <div class="order-items" *ngIf="order.enrichedItems?.length">
+      <div class="order-item-row" *ngFor="let it of order.enrichedItems">
+  <div class="oi-image">
+    <img *ngIf="it.itemImageUrl" [src]="it.itemImageUrl" [alt]="it.itemName" />
+    <span *ngIf="!it.itemImageUrl" class="img-placeholder">🍴</span>
+  </div>
+  <div class="oi-info">
+    <p class="oi-name">{{ it.itemName }}</p>
+    <p class="oi-rest" *ngIf="it.restaurantName">📍 {{ it.restaurantName }}</p>
+  </div>
+  <div class="oi-right">
+    <p class="oi-qty">Qty: {{ it.quantity }}</p>
+    <p class="oi-price">₹{{ it.itemPrice }}</p>
+  </div>
+</div>
+    </div>
+
+    <p class="order-total" *ngIf="order.computedTotal > 0">
+      <strong>Total:</strong> ₹{{ order.computedTotal }}
+    </p>
+  </div>
+<div class="order-actions" *ngIf="order.orderStatus !== 'CANCELLED' && order.orderStatus !== 'DELIVERED'">
+    <button class="cancel-btn" (click)="cancelOrder(order.orderId)">Cancel Order</button>
+  </div>
+ 
+</div>
+</div>
