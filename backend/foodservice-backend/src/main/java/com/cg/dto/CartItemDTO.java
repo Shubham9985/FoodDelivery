@@ -1,8 +1,13 @@
 package com.cg.dto;
 
-public class CartItemDTO {
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
+public class CartItemDTO {
+    @NotNull(message="Item ID is required")
 	private Integer itemId;
+    @NotNull(message="Quantity is required")
+    @Min(value=1,message="Quantity must be atleast 1")
 	private Integer quantity;
 	public Integer getItemId() {
 		return itemId;
