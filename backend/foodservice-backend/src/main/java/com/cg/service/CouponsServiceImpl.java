@@ -1,5 +1,6 @@
 package com.cg.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,7 +24,7 @@ public class CouponsServiceImpl implements CouponsService {
     @Autowired
     private CouponsRepository repo;
 
-    // 🔄 Mapping
+    // Mapping
     private Coupons mapToEntity(CouponsDTO dto) {
         Coupons c = new Coupons();
         c.setCouponId(dto.getCouponId());
@@ -42,7 +43,7 @@ public class CouponsServiceImpl implements CouponsService {
         );
     }
 
-    // ➕ Add
+    // Add
     @Override
     public CouponsDTO addCoupon(CouponsDTO dto) {
 
@@ -58,7 +59,7 @@ public class CouponsServiceImpl implements CouponsService {
         return mapToDTO(saved);
     }
 
-    // 🔍 Get by ID
+    // Get by ID
     @Override
     public CouponsDTO getCouponById(Integer id) {
         Coupons c = repo.findById(id)
@@ -66,7 +67,7 @@ public class CouponsServiceImpl implements CouponsService {
         return mapToDTO(c);
     }
 
-    // 🔍 Get by Code
+    // Get by Code
     @Override
     public CouponsDTO getCouponByCode(String code) {
         Coupons c = repo.findByCouponCode(code)
@@ -74,7 +75,7 @@ public class CouponsServiceImpl implements CouponsService {
         return mapToDTO(c);
     }
 
-    // 📄 Get All
+    // Get All
     @Override
     public List<CouponsDTO> getAllCoupons() {
         return repo.findAll().stream()
@@ -82,7 +83,7 @@ public class CouponsServiceImpl implements CouponsService {
                 .collect(Collectors.toList());
     }
 
-    // ✏️ Update
+    //  Update
     @Override
     public CouponsDTO updateCoupon(Integer id, CouponsDTO dto) {
 
@@ -105,7 +106,7 @@ public class CouponsServiceImpl implements CouponsService {
         return mapToDTO(repo.save(existing));
     }
 
-    // ❌ Delete
+    // Delete
     @Override
     public void deleteCoupon(Integer id) {
         Coupons c = repo.findById(id)
@@ -113,7 +114,7 @@ public class CouponsServiceImpl implements CouponsService {
         repo.delete(c);
     }
 
-    // 💰 Apply Coupon
+    // Apply Coupon
     @Override
     public Double applyCoupon(String code, Double orderAmount) {
 
@@ -128,6 +129,11 @@ public class CouponsServiceImpl implements CouponsService {
             throw new CouponException("Coupon expired");
         }
 
-        return Math.min(c.getDiscountAmount(), orderAmount);
+     // BigDecimal-safe min of discount and order amount
+        BigDecimal discount = c.getDiscountAmount();
+        BigDecimal order = BigDecimal.valueOf(orderAmount);
+        BigDecimal applied = discount.min(order);
+
+        return applied.doubleValue();
     }
 }

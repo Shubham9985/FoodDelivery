@@ -35,32 +35,44 @@ public class RatingDTO {
     }
     
     
+	public Integer getRatingId() {
+		return ratingId;
+	}
+	public void setRatingId(Integer ratingId) {
+		this.ratingId = ratingId;
+	}
+	
+
 	public Integer getRating() {
 		return rating;
 	}
 	public void setRating(Integer rating) {
 		this.rating = rating;
 	}
+	
+	
 	public String getReview() {
 		return review;
 	}
 	public void setReview(String review) {
 		this.review = review;
 	}
+	
+	
 	public Integer getOrderId() {
 		return orderId;
 	}
 	public void setOrderId(Integer orderId) {
 		this.orderId = orderId;
 	}
+	
+	
 	public Integer getRestaurantId() {
 		return restaurantId;
 	}
 	public void setRestaurantId(Integer restaurantId) {
 		this.restaurantId = restaurantId;
 	}
-
-    // getters & setters
     
     
 }
