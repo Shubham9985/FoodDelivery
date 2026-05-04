@@ -1,56 +1,79 @@
 package com.cg.web;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
+import com.cg.dto.CartItemDTO;
 import com.cg.dto.CartResponseDTO;
 import com.cg.service.CartService;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+
 @RestController
-@RequestMapping("/cart")
+@RequestMapping("/api/cart")
+@Validated
 public class CartController {
 
     @Autowired
     private CartService cartService;
 
+    // GET CART
     @GetMapping("/{customerId}")
-    public CartResponseDTO getCart(@PathVariable Integer customerId) {
-        return cartService.getCartByCustomer(customerId);
+    public ResponseEntity<CartResponseDTO> getCart(
+            @Positive(message = "Customer ID must be positive")
+            @PathVariable Integer customerId) {
+        return ResponseEntity.ok(cartService.getCartByCustomer(customerId));
     }
 
-    @PostMapping("/add")
-    public CartResponseDTO addItem(
-            @RequestParam Integer customerId,
-            @RequestParam Integer itemId,
-            @RequestParam Integer quantity) {
-        return cartService.addItem(customerId, itemId, quantity);
+    // ADD ITEM — uses CartItemDTO so validation in DTO actually fires
+    @PostMapping("/{customerId}/items")
+    public ResponseEntity<CartResponseDTO> addItem(
+            @Positive(message = "Customer ID must be positive")
+            @PathVariable Integer customerId,
+            @Valid @RequestBody CartItemDTO dto) {
+        return new ResponseEntity<>(
+                cartService.addItem(customerId, dto.getItemId(), dto.getQuantity()),
+                HttpStatus.CREATED);
     }
 
-    @PutMapping("/update")
-    public CartResponseDTO updateItem(
-            @RequestParam Integer customerId,
-            @RequestParam Integer itemId,
-            @RequestParam Integer quantity) {
-        return cartService.updateItem(customerId, itemId, quantity);
+    // UPDATE ITEM QUANTITY
+    @PutMapping("/{customerId}/items")
+    public ResponseEntity<CartResponseDTO> updateItem(
+            @Positive(message = "Customer ID must be positive")
+            @PathVariable Integer customerId,
+            @Valid @RequestBody CartItemDTO dto) {
+        return ResponseEntity.ok(
+                cartService.updateItem(customerId, dto.getItemId(), dto.getQuantity()));
     }
 
-    @DeleteMapping("/remove")
-    public CartResponseDTO removeItem(
-            @RequestParam Integer customerId,
-            @RequestParam Integer itemId) {
-        return cartService.removeItem(customerId, itemId);
+    // REMOVE A SINGLE ITEM
+    @DeleteMapping("/{customerId}/items/{itemId}")
+    public ResponseEntity<CartResponseDTO> removeItem(
+            @Positive(message = "Customer ID must be positive")
+            @PathVariable Integer customerId,
+            @Positive(message = "Item ID must be positive")
+            @PathVariable Integer itemId) {
+        return ResponseEntity.ok(cartService.removeItem(customerId, itemId));
     }
 
-    @PostMapping("/checkout")
-    public String checkout(@RequestParam Integer customerId) {
+    // CLEAR CART (was missing in original)
+    @DeleteMapping("/{customerId}")
+    public ResponseEntity<CartResponseDTO> clearCart(
+            @Positive(message = "Customer ID must be positive")
+            @PathVariable Integer customerId) {
+        return ResponseEntity.ok(cartService.clearCart(customerId));
+    }
+
+    // CHECKOUT
+    @PostMapping("/{customerId}/checkout")
+    public ResponseEntity<String> checkout(
+            @Positive(message = "Customer ID must be positive")
+            @PathVariable Integer customerId) {
         cartService.checkout(customerId);
-        return "Order placed successfully";
+        return new ResponseEntity<>("Order placed successfully", HttpStatus.CREATED);
     }
 }
