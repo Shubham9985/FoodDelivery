@@ -4,6 +4,7 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } fro
 import { forkJoin, of } from 'rxjs';
 import { catchError, filter } from 'rxjs/operators';
 import { AdminService } from '../../services/admin-services/admin.service';
+import { getStoredUser, isBrowser } from '../../../utils/browser-storage';
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
@@ -31,7 +32,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const user = getStoredUser() || {};
     if (user?.role !== 'ADMIN') {
       this.router.navigate(['/auth']);
       return;
@@ -62,7 +63,9 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   logout(): void {
-    localStorage.removeItem('user');
+    if (isBrowser()) {
+      window.localStorage.removeItem('user');
+    }
     this.router.navigate(['/auth']);
   }
 }

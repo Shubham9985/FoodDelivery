@@ -16,7 +16,7 @@ import { AdminOrdersComponent } from './admin/orders/admin-orders/admin-orders.c
 import { AdminCustomerComponent } from './admin/customer/admin-customer/admin-customer.component';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'auth', pathMatch: 'full' },
+  { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: 'auth', component: AuthComponent },
   { path: 'home', component: HomeComponent },
   { path: 'restaurant/:id', component: RestaurantMenuComponent },
@@ -38,5 +38,5 @@ export const routes: Routes = [
     ]
   },
 
-  { path: '**', redirectTo: 'auth' }
+  { path: '**', redirectTo: 'home' }
 ];

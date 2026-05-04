@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { CustomerService } from '../services/customer.service';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-home',
@@ -21,6 +22,7 @@ export class HomeComponent implements OnInit {
   view: 'items' | 'restaurants' = 'items';
   loading = false;
   error = '';
+  isLoggedIn = false;
   searchKeyword = '';
   activeSearchKeyword = '';
   quantities: { [itemId: number]: number } = {};
@@ -36,9 +38,14 @@ export class HomeComponent implements OnInit {
   selectedRestaurantId: number | null = null;
   sortBy: 'default' | 'priceAsc' | 'priceDesc' | 'nameAsc' | 'ratingDesc' = 'default';
 
-  constructor(private customerService: CustomerService, private router: Router) {}
+  constructor(
+    private customerService: CustomerService,
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
+    this.isLoggedIn = this.authService.isAuthenticated();
     this.loadMenuItems();
   }
 
@@ -278,8 +285,13 @@ export class HomeComponent implements OnInit {
   goAddresses(): void { this.router.navigate(['/addresses']); }
   goHome(): void { this.showItems(); }
 
+  login(): void {
+    this.router.navigate(['/auth']);
+  }
+
   logout(): void {
-    localStorage.removeItem('user');
+    this.authService.logout();
+    this.isLoggedIn = false;
     this.router.navigate(['/auth']);
   }
 

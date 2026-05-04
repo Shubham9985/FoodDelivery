@@ -15,3 +15,81 @@ body {
 .nav-link:hover {
   color: #fc8019 !important; /* Swiggy orange */
 }
+
+/* FOOTER MAIN */
+.app-footer {
+  background: linear-gradient(135deg, #fc8019, #fb923c);
+  color: white;
+  padding: 40px 20px;
+  margin-top: 40px;
+}
+
+/* FOOTER CONTAINER */
+.footer-content {
+  max-width: 1100px;
+  margin: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+/* BRAND SECTION */
+.footer-brand {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+}
+
+.footer-logo {
+  font-size: 2rem;
+}
+
+/* BRAND TEXT */
+.footer-brand h3 {
+  margin: 0;
+  font-weight: 700;
+}
+
+.footer-brand p {
+  margin: 5px 0 0;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+/* LINKS / INFO */
+.footer-links {
+  text-align: right;
+  font-size: 14px;
+}
+
+.footer-links p {
+  margin: 5px 0;
+}
+
+/* DIVIDER LINE */
+.app-footer::after {
+  content: "";
+  display: block;
+  height: 1px;
+  background: rgba(255,255,255,0.3);
+  margin-top: 20px;
+}
+
+/* HOVER EFFECT */
+.footer-links p:hover {
+  opacity: 0.8;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .footer-links {
+    text-align: center;
+  }
+}
