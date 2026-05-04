@@ -1,10 +1,8 @@
 package com.cg.dto;
 
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
 public class RestaurantRequestDTO {
@@ -14,9 +12,7 @@ public class RestaurantRequestDTO {
     // @NotNull  → rejects missing/null ID in the JSON body.
     // @Positive → rejects 0 and negative values (valid IDs always start from 1).
 
-    @NotNull(message = "Restaurant ID must not be null")
-    @Positive(message = "Restaurant ID must be a positive integer")
-    private Integer restaurantId;
+
 
     // ─── restaurantName ────────────────────────────────────────────────────────
     // @NotBlank → rejects null, "", and "   " (covers @NotNull + @NotEmpty + trim check).
@@ -53,11 +49,11 @@ public class RestaurantRequestDTO {
 
     public RestaurantRequestDTO() {}
 
-    public RestaurantRequestDTO(Integer restaurantId,
+    public RestaurantRequestDTO(
                                 String restaurantName,
                                 String restaurantAddress,
                                 String restaurantPhone) {
-        this.restaurantId      = restaurantId;
+       
         this.restaurantName    = restaurantName;
         this.restaurantAddress = restaurantAddress;
         this.restaurantPhone   = restaurantPhone;
@@ -65,8 +61,7 @@ public class RestaurantRequestDTO {
 
     // ─── Getters & Setters ────────────────────────────────────────────────────
 
-    public Integer getRestaurantId() { return restaurantId; }
-    public void setRestaurantId(Integer restaurantId) { this.restaurantId = restaurantId; }
+   
 
     public String getRestaurantName() { return restaurantName; }
     public void setRestaurantName(String restaurantName) { this.restaurantName = restaurantName; }
@@ -80,7 +75,6 @@ public class RestaurantRequestDTO {
     @Override
     public String toString() {
         return "RestaurantRequestDTO{" +
-               "restaurantId=" + restaurantId +
                ", restaurantName='" + restaurantName + '\'' +
                ", restaurantAddress='" + restaurantAddress + '\'' +
                ", restaurantPhone='" + restaurantPhone + '\'' +

@@ -1,38 +1,78 @@
 <div class="container mt-4">
 
-  <h2>Menu Items</h2>
+  <h2 class="mb-3">Menu Items</h2>
 
-  <div class="row">
+  <!-- ── Filters ─────────────────────────────────────────────────────────── -->
+  <div class="row g-2 mb-4 align-items-end">
 
-    <div class="col-md-4 mb-3" *ngFor="let item of menuItems">
+    <div class="col-md-4">
+      <label class="form-label fw-semibold">Search by name</label>
+      <input
+        type="text"
+        class="form-control"
+        placeholder="e.g. Paneer Tikka"
+        [(ngModel)]="searchKeyword"
+        (keyup.enter)="onSearch()" />
+    </div>
 
-      <div class="card h-100">
+    <div class="col-md-3">
+      <label class="form-label fw-semibold">Max price (₹)</label>
+      <input
+        type="number"
+        class="form-control"
+        placeholder="e.g. 300"
+        [(ngModel)]="maxPrice"
+        (change)="onMaxPriceFilter()" />
+    </div>
+
+    <div class="col-md-auto">
+      <button class="btn btn-primary me-2" (click)="onSearch()">Search</button>
+      <button class="btn btn-outline-secondary" (click)="clearFilters()">Clear</button>
+    </div>
+
+  </div>
+
+  <!-- ── Loading spinner ─────────────────────────────────────────────────── -->
+  <div *ngIf="isLoading" class="text-center my-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2 text-muted">Loading menu items…</p>
+  </div>
+
+  <!-- ── Error message ───────────────────────────────────────────────────── -->
+  <div *ngIf="errorMessage && !isLoading" class="alert alert-danger d-flex align-items-center" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    {{ errorMessage }}
+    <button class="btn btn-sm btn-outline-danger ms-auto" (click)="loadAllMenuItems()">Retry</button>
+  </div>
+
+  <!-- ── Empty state ─────────────────────────────────────────────────────── -->
+  <div *ngIf="!isLoading && !errorMessage && filteredItems.length === 0" class="text-center text-muted my-5">
+    <p>No menu items found.</p>
+    <button class="btn btn-outline-primary btn-sm" (click)="clearFilters()">Clear filters</button>
+  </div>
+
+  <!-- ── Menu cards ──────────────────────────────────────────────────────── -->
+  <div class="row" *ngIf="!isLoading && !errorMessage">
+
+    <div class="col-md-4 mb-3" *ngFor="let item of filteredItems">
+
+      <div class="card h-100 shadow-sm">
 
         <div class="card-body">
-
-          <!-- NAME -->
-          <h5>{{ item.itemName }}</h5>
-
-          <!-- DESCRIPTION -->
-          <p>{{ item.itemDescription }}</p>
-
-          <!-- RESTAURANT -->
-          <small class="text-muted">
-            {{ item.restaurantName }}
+          <h5 class="card-title">{{ item.itemName }}</h5>
+          <p class="card-text text-muted">{{ item.itemDescription }}</p>
+          <small class="text-secondary">
+            <i class="bi bi-shop"></i> {{ item.restaurantName }}
           </small>
-
-          <!-- PRICE -->
-          <h6 class="mt-2">₹ {{ item.itemPrice }}</h6>
-
+          <h6 class="mt-2 text-success fw-bold">₹ {{ item.itemPrice | number:'1.2-2' }}</h6>
         </div>
 
-        <div class="card-footer">
-
-          <button class="btn btn-primary w-100"
-                  (click)="addToCart(item)">
+        <div class="card-footer bg-white border-top-0 pt-0">
+          <button class="btn btn-primary w-100" (click)="addToCart(item)">
             Add to Cart
           </button>
-
         </div>
 
       </div>
