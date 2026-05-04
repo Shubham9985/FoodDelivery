@@ -1,0 +1,143 @@
+<div class="home-container">
+  <header class="navbar">
+    <button class="logo-btn" (click)="goHome()">
+      <span class="logo-mark">🍔</span>
+      <span class="logo-text">FoodieHub</span>
+    </button>
+    <nav>
+      <button class="nav-btn" [class.active]="view === 'items'" (click)="showItems()">Home</button>
+      <button class="nav-btn" [class.active]="view === 'restaurants'" (click)="showRestaurants()">Restaurants</button>
+      <button class="nav-btn" (click)="goCart()">Cart</button>
+      <button class="nav-btn" (click)="goOrders()">My Orders</button>
+      <button class="nav-btn" (click)="goAddresses()">Addresses</button>
+      <button class="nav-btn" (click)="goProfile()">Profile</button>
+      <button class="logout-btn" (click)="logout()">Logout</button>
+    </nav>
+  </header>
+
+  <div class="toast" *ngIf="message" [class.success]="messageType === 'success'" [class.error]="messageType === 'error'">
+    {{ message }}
+  </div>
+
+  <section class="hero">
+    <h2>Discover delicious food near you</h2>
+    <p class="hero-sub">Order from your favourite restaurants, delivered fresh to your door.</p>
+    <div class="search-bar">
+      <button class="filter-icon-btn" (click)="toggleFilters()" [class.active]="showFilters" title="Filters">
+        ⚙
+      </button>
+      <input type="text" [(ngModel)]="searchKeyword"
+       [placeholder]="view === 'items' ? 'Search dishes or restaurants...' : 'Search by dish name...'"
+       (ngModelChange)="onSearchChange($event)"
+       (keyup.enter)="search()" />
+      <button (click)="search()">Search</button>
+    </div>
+
+    <div class="filter-panel" *ngIf="showFilters">
+      <div class="filter-group" *ngIf="view === 'items'">
+        <label>Min Price (₹)</label>
+        <input type="number" min="0" [(ngModel)]="minPrice" (ngModelChange)="applyFilters()" placeholder="0" />
+      </div>
+
+      <div class="filter-group" *ngIf="view === 'items'">
+        <label>Max Price (₹)</label>
+        <input type="number" min="0" [(ngModel)]="maxPrice" (ngModelChange)="applyFilters()" placeholder="Any" />
+      </div>
+
+      <div class="filter-group">
+        <label>Min Rating</label>
+        <select [(ngModel)]="minRating" (ngModelChange)="applyFilters()">
+          <option [ngValue]="0">Any</option>
+          <option [ngValue]="1">★ 1+</option>
+          <option [ngValue]="2">★ 2+</option>
+          <option [ngValue]="3">★ 3+</option>
+          <option [ngValue]="4">★ 4+</option>
+          <option [ngValue]="4.5">★ 4.5+</option>
+        </select>
+      </div>
+
+      <div class="filter-group" *ngIf="view === 'items'">
+        <label>Restaurant</label>
+        <select [(ngModel)]="selectedRestaurantId" (ngModelChange)="applyFilters()">
+          <option [ngValue]="null">All Restaurants</option>
+          <option *ngFor="let r of getRestaurantOptions()" [ngValue]="r.restaurantId">
+            {{ r.restaurantName }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Sort By</label>
+        <select [(ngModel)]="sortBy" (ngModelChange)="applyFilters()">
+          <option value="default">Default</option>
+          <option value="priceAsc" *ngIf="view === 'items'">Price: Low to High</option>
+          <option value="priceDesc" *ngIf="view === 'items'">Price: High to Low</option>
+          <option value="nameAsc">Name (A-Z)</option>
+          <option value="ratingDesc">Rating: High to Low</option>
+        </select>
+      </div>
+
+      <div class="filter-group filter-actions">
+        <button class="reset-btn" (click)="resetFilters()">Reset</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- MENU ITEMS VIEW -->
+  <section class="content-section" *ngIf="view === 'items'">
+    <h3 class="section-title">Popular Dishes</h3>
+    <div *ngIf="loading" class="loading">Loading...</div>
+    <div *ngIf="error" class="error-msg">{{ error }}</div>
+
+    <div class="item-grid" *ngIf="!loading">
+      <div class="item-card" *ngFor="let item of menuItems">
+        <div class="item-image">
+          <img *ngIf="item.itemImageUrl" [src]="item.itemImageUrl" [alt]="item.itemName" />
+          <span *ngIf="!item.itemImageUrl" class="img-placeholder">🍴</span>
+          </div>
+        <div class="item-body">
+          <h4 class="item-name">{{ item.itemName }}</h4>
+          <p class="item-restaurant">{{ item.restaurantName }}</p>
+          <div class="item-meta">
+            <span class="price">₹{{ item.itemPrice }}</span>
+            <span class="rating" *ngIf="getRating(item.restaurantId) > 0">
+              ★ {{ getRating(item.restaurantId) | number:'1.1-1' }}
+            </span>
+            <span class="rating muted" *ngIf="getRating(item.restaurantId) === 0">★ New</span>
+          </div>
+          <div class="item-actions">
+            <div class="qty-control">
+              <button class="qty-btn" (click)="decrease(item.itemId)" [disabled]="quantities[item.itemId] <= 1">−</button>
+              <span class="qty-val">{{ quantities[item.itemId] || 1 }}</span>
+              <button class="qty-btn" (click)="increase(item.itemId)">+</button>
+            </div>
+            <button class="add-btn" (click)="addToCart(item)">Add to Cart</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!loading && menuItems.length === 0" class="empty">No menu items available.</div>
+  </section>
+
+  <!-- RESTAURANTS VIEW -->
+  <section class="content-section" *ngIf="view === 'restaurants'">
+    <h3 class="section-title">All Restaurants</h3>
+    <div *ngIf="loading" class="loading">Loading...</div>
+    <div *ngIf="error" class="error-msg">{{ error }}</div>
+
+    <div class="restaurant-grid" *ngIf="!loading">
+      <div class="restaurant-card" *ngFor="let r of restaurants" (click)="viewRestaurant(r.restaurantId)">
+        <div class="card-image">🍽️</div>
+        <div class="card-body">
+          <h4>{{ r.restaurantName }}</h4>
+          <p class="address">📍 {{ r.restaurantAddress }}</p>
+          <p class="phone">📞 {{ r.restaurantPhone }}</p>
+          <span class="view-btn">View Menu →</span>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!loading && restaurants.length === 0" class="empty">No restaurants found.</div>
+  </section>
+</div>
