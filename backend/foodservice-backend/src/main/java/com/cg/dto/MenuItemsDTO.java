@@ -65,7 +65,11 @@ public class MenuItemsDTO {
 
         public Response() {}
 
-        public Integer getItemId() { return itemId; }
+        public Response(int i, String string, String string2, double d, int j, String string3, Object object) {
+			// TODO Auto-generated constructor stub
+		}
+
+		public Integer getItemId() { return itemId; }
         public void setItemId(Integer itemId) { this.itemId = itemId; }
 
         public String getItemName() { return itemName; }
