@@ -1,0 +1,87 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div>
+      <h2>Restaurants</h2>
+      <p class="sub">Manage all restaurants on the platform</p>
+    </div>
+    <button class="primary-btn" (click)="openAddForm()">+ Add Restaurant</button>
+  </div>
+
+  <div class="toast" [class.success]="messageType==='success'" [class.error]="messageType==='error'" *ngIf="message">
+    {{ message }}
+  </div>
+
+  <!-- Form Modal -->
+  <div class="modal-overlay" *ngIf="showForm" (click)="closeForm()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>{{ editingId ? 'Edit Restaurant' : 'Add Restaurant' }}</h3>
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="field">
+          <label>Restaurant Name</label>
+          <input type="text" formControlName="restaurantName" placeholder="e.g. Pizza Palace" />
+          <small *ngIf="form.get('restaurantName')?.touched && form.get('restaurantName')?.invalid">
+            Name must be 2-100 characters
+          </small>
+        </div>
+
+        <div class="field">
+          <label>Address</label>
+          <input type="text" formControlName="restaurantAddress" placeholder="123 Main St, City" />
+          <small *ngIf="form.get('restaurantAddress')?.touched && form.get('restaurantAddress')?.invalid">
+            Address is required (min 5 chars)
+          </small>
+        </div>
+
+        <div class="field">
+          <label>Phone</label>
+          <input type="text" formControlName="restaurantPhone" placeholder="9876543210" />
+          <small *ngIf="form.get('restaurantPhone')?.touched && form.get('restaurantPhone')?.invalid">
+            Enter a valid phone number
+          </small>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="cancel-btn" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="primary-btn">{{ editingId ? 'Update' : 'Add' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- List -->
+  <div *ngIf="loading" class="loading">Loading restaurants...</div>
+
+  <div *ngIf="!loading && restaurants.length === 0" class="empty">
+    No restaurants yet. Click "Add Restaurant" to get started.
+  </div>
+
+  <div class="data-table" *ngIf="!loading && restaurants.length > 0">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Address</th>
+          <th>Phone</th>
+          <th>Menu Items</th>
+          <th>Orders</th>
+          <th class="actions-col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of restaurants">
+          <td>{{ r.restaurantId }}</td>
+          <td><strong>{{ r.restaurantName }}</strong></td>
+          <td>{{ r.restaurantAddress }}</td>
+          <td>{{ r.restaurantPhone }}</td>
+          <td>{{ r.menuItemIds?.length || 0 }}</td>
+          <td>{{ r.orderIds?.length || 0 }}</td>
+          <td class="actions">
+            <button class="edit-btn" (click)="openEditForm(r)">Edit</button>
+            <button class="delete-btn" (click)="deleteRestaurant(r.restaurantId)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

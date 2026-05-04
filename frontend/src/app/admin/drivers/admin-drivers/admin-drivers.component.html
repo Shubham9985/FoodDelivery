@@ -1,0 +1,83 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div>
+      <h2>Delivery Drivers</h2>
+      <p class="sub">Manage all delivery drivers</p>
+    </div>
+    <button class="primary-btn" (click)="openAddForm()">+ Add Driver</button>
+  </div>
+
+  <div class="toast" [class.success]="messageType==='success'" [class.error]="messageType==='error'" *ngIf="message">
+    {{ message }}
+  </div>
+
+  <!-- Form Modal -->
+  <div class="modal-overlay" *ngIf="showForm" (click)="closeForm()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>{{ editingId ? 'Edit Driver' : 'Add Driver' }}</h3>
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="field">
+          <label>Driver Name</label>
+          <input type="text" formControlName="driverName" placeholder="John Doe" />
+          <small *ngIf="form.get('driverName')?.touched && form.get('driverName')?.invalid">
+            Name must be 2-50 characters
+          </small>
+        </div>
+
+        <div class="field">
+          <label>Phone</label>
+          <input type="text" formControlName="driverPhone" placeholder="9876543210" />
+          <small *ngIf="form.get('driverPhone')?.touched && form.get('driverPhone')?.invalid">
+            Phone must be 10 digits
+          </small>
+        </div>
+
+        <div class="field">
+          <label>Vehicle</label>
+          <input type="text" formControlName="driverVehicle" placeholder="e.g. Honda Activa - DL01AB1234" />
+          <small *ngIf="form.get('driverVehicle')?.touched && form.get('driverVehicle')?.invalid">
+            Vehicle info is required
+          </small>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="cancel-btn" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="primary-btn">{{ editingId ? 'Update' : 'Add' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- List -->
+  <div *ngIf="loading" class="loading">Loading drivers...</div>
+
+  <div *ngIf="!loading && drivers.length === 0" class="empty">
+    No drivers yet.
+  </div>
+
+  <div class="data-table" *ngIf="!loading && drivers.length > 0">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Phone</th>
+          <th>Vehicle</th>
+          <th class="actions-col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let d of drivers">
+          <td>{{ d.driverId }}</td>
+          <td><strong>{{ d.driverName }}</strong></td>
+          <td>{{ d.driverPhone }}</td>
+          <td>{{ d.driverVehicle }}</td>
+          <td class="actions">
+            <button class="edit-btn" (click)="openEditForm(d)">Edit</button>
+            <button class="delete-btn" (click)="deleteDriver(d.driverId)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

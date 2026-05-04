@@ -1,0 +1,89 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div>
+      <h2>Orders</h2>
+      <p class="sub">Manage all orders, update status, and assign drivers</p>
+    </div>
+    <div class="filter-group">
+      <label>Filter:</label>
+      <select [(ngModel)]="filterStatus">
+        <option value="ALL">All Orders</option>
+        <option *ngFor="let s of statusOptions" [value]="s">{{ s }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="toast" [class.success]="messageType==='success'" [class.error]="messageType==='error'" *ngIf="message">
+    {{ message }}
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading orders...</div>
+
+  <div *ngIf="!loading && filteredOrders.length === 0" class="empty">
+    No orders found.
+  </div>
+
+  <div class="orders-list" *ngIf="!loading && filteredOrders.length > 0">
+    <div class="order-card" *ngFor="let o of filteredOrders">
+      <div class="order-header">
+        <div>
+          <h4>Order #{{ o.orderId }}</h4>
+          <p class="order-meta">
+            Customer ID: {{ o.customerId }} · Restaurant ID: {{ o.restaurantId }}
+          </p>
+          <p class="order-meta">{{ o.orderDate | date:'medium' }}</p>
+        </div>
+        <span class="status-badge" [ngClass]="(o.orderStatus || '').toLowerCase()">
+          {{ o.orderStatus }}
+        </span>
+      </div>
+
+      <div class="order-items" *ngIf="o.items && o.items.length > 0">
+        <p class="items-label">Items:</p>
+        <div class="items-row">
+          <span class="item-chip" *ngFor="let it of o.items">
+            {{ getItemName(it.itemId) }} × {{ it.quantity }}
+          </span>
+        </div>
+      </div>
+
+      <div class="order-controls">
+        <div class="control-group">
+          <label>Update Status</label>
+          <div class="control-row">
+            <select [(ngModel)]="selectedStatus[o.orderId]" [disabled]="isFinalized(o.orderStatus)">
+              <option *ngFor="let s of statusOptions" [value]="s">{{ s }}</option>
+            </select>
+            <button class="action-btn" (click)="updateStatus(o.orderId)" [disabled]="isFinalized(o.orderStatus)">
+              Update
+            </button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label>Driver: <strong>{{ getDriverName(o.driverId) }}</strong></label>
+          <div class="control-row">
+            <select [(ngModel)]="selectedDriver[o.orderId]" [disabled]="isFinalized(o.orderStatus)">
+              <option [ngValue]="null">-- Select Driver --</option>
+              <option *ngFor="let d of drivers" [ngValue]="d.driverId">
+                {{ d.driverName }} ({{ d.driverVehicle }})
+              </option>
+            </select>
+            <button class="action-btn" (click)="assignDriver(o.orderId)" [disabled]="isFinalized(o.orderStatus)">
+              Assign
+            </button>
+          </div>
+        </div>
+
+        <div class="control-group cancel-group">
+          <label class="spacer-label">&nbsp;</label>
+          <button class="delete-btn cancel-order-btn"
+                  (click)="cancelOrder(o.orderId)"
+                  [disabled]="isFinalized(o.orderStatus)">
+            Cancel Order
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

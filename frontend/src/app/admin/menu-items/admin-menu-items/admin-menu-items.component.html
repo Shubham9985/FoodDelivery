@@ -1,0 +1,103 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div>
+      <h2>Menu Items</h2>
+      <p class="sub">Manage all menu items across restaurants</p>
+    </div>
+    <button class="primary-btn" (click)="openAddForm()">+ Add Menu Item</button>
+  </div>
+
+  <div class="toast" [class.success]="messageType==='success'" [class.error]="messageType==='error'" *ngIf="message">
+    {{ message }}
+  </div>
+
+  <!-- Form Modal -->
+  <div class="modal-overlay" *ngIf="showForm" (click)="closeForm()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>{{ editingId ? 'Edit Menu Item' : 'Add Menu Item' }}</h3>
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="field">
+          <label>Item Name</label>
+          <input type="text" formControlName="itemName" placeholder="e.g. Margherita Pizza" />
+          <small *ngIf="form.get('itemName')?.touched && form.get('itemName')?.invalid">
+            Item name is required
+          </small>
+        </div>
+
+        <div class="field">
+          <label>Description</label>
+          <textarea formControlName="itemDescription" rows="3" placeholder="Brief description of the item"></textarea>
+          <small *ngIf="form.get('itemDescription')?.touched && form.get('itemDescription')?.invalid">
+            Description is required
+          </small>
+        </div>
+
+        <div class="field">
+          <label>Price</label>
+          <input type="number" step="0.01" formControlName="itemPrice" placeholder="0.00" />
+          <small *ngIf="form.get('itemPrice')?.touched && form.get('itemPrice')?.invalid">
+            Price must be greater than 0
+          </small>
+        </div>
+
+        <div class="field">
+          <label>Restaurant</label>
+          <select formControlName="restaurantId">
+            <option [ngValue]="null">-- Select Restaurant --</option>
+            <option *ngFor="let r of restaurants" [ngValue]="r.restaurantId">
+              {{ r.restaurantName }}
+            </option>
+          </select>
+          <small *ngIf="form.get('restaurantId')?.touched && form.get('restaurantId')?.invalid">
+            Restaurant is required
+          </small>
+        </div>
+
+        <div class="field">
+          <label>Image URL (optional)</label>
+          <input type="text" formControlName="itemImageUrl" placeholder="https://..." />
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="cancel-btn" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="primary-btn">{{ editingId ? 'Update' : 'Add' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- List -->
+  <div *ngIf="loading" class="loading">Loading menu items...</div>
+
+  <div *ngIf="!loading && menuItems.length === 0" class="empty">
+    No menu items yet.
+  </div>
+
+  <div class="data-table" *ngIf="!loading && menuItems.length > 0">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Price</th>
+          <th>Restaurant</th>
+          <th class="actions-col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of menuItems">
+          <td>{{ item.itemId }}</td>
+          <td><strong>{{ item.itemName }}</strong></td>
+          <td class="desc-col">{{ item.itemDescription }}</td>
+          <td>₹{{ item.itemPrice }}</td>
+          <td>{{ item.restaurantName || ('Restaurant ' + item.restaurantId) }}</td>
+          <td class="actions">
+            <button class="edit-btn" (click)="openEditForm(item)">Edit</button>
+            <button class="delete-btn" (click)="deleteItem(item.itemId)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
