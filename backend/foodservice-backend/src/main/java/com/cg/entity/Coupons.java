@@ -1,7 +1,8 @@
 package com.cg.entity;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Set;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,13 +23,13 @@ public class Coupons {
 	@Column(unique = true)
 	private String couponCode;
 
-	private Double discountAmount;
+	private BigDecimal discountAmount;
 	
 	@Column(name = "expiry_date")
 	private LocalDate expiryDate;
 
 	@ManyToMany(mappedBy = "coupons")
-	private List<Order> orders;
+	private Set<Order> orders;
 
 	public Integer getCouponId() {
 		return couponId;
@@ -46,11 +47,11 @@ public class Coupons {
 		this.couponCode = couponCode;
 	}
 
-	public Double getDiscountAmount() {
+	public BigDecimal getDiscountAmount() {
 		return discountAmount;
 	}
 
-	public void setDiscountAmount(Double discountAmount) {
+	public void setDiscountAmount(BigDecimal discountAmount) {
 		this.discountAmount = discountAmount;
 	}
 

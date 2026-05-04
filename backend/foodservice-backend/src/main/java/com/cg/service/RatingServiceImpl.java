@@ -28,7 +28,7 @@ public class RatingServiceImpl implements RatingService {
     @Autowired
     private RestaurantRepository restaurantRepo;
 
-    // 🔄 Mapping
+    // Mapping
     private Rating mapToEntity(RatingDTO dto) {
 
         Rating r = new Rating();
@@ -57,7 +57,7 @@ public class RatingServiceImpl implements RatingService {
         );
     }
 
-    // ➕ Add
+    // Add
     @Override
     public RatingDTO addRating(RatingDTO dto) {
 
@@ -69,7 +69,7 @@ public class RatingServiceImpl implements RatingService {
         return mapToDTO(saved);
     }
 
-    // 🔍 Get by ID
+    // Get by ID
     @Override
     public RatingDTO getRatingById(Integer id) {
         Rating r = ratingRepo.findById(id)
@@ -77,21 +77,21 @@ public class RatingServiceImpl implements RatingService {
         return mapToDTO(r);
     }
 
-    // 📄 Get All
+    // Get All
     @Override
     public List<RatingDTO> getAllRatings() {
         return ratingRepo.findAll()
                 .stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
-    // 🍽️ Get by Restaurant
+    // Get by Restaurant
     @Override
     public List<RatingDTO> getRatingsByRestaurant(Integer restaurantId) {
         return ratingRepo.findByRestaurantRestaurantId(restaurantId)
                 .stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
-    // ✏️ Update
+    //️ Update
     @Override
     public RatingDTO updateRating(Integer id, RatingDTO dto) {
 
@@ -104,7 +104,7 @@ public class RatingServiceImpl implements RatingService {
         return mapToDTO(ratingRepo.save(existing));
     }
 
-    // ❌ Delete
+    // Delete
     @Override
     public void deleteRating(Integer id) {
         Rating r = ratingRepo.findById(id)
@@ -112,7 +112,7 @@ public class RatingServiceImpl implements RatingService {
         ratingRepo.delete(r);
     }
 
-    // ⭐ Average Rating
+    // Average Rating
     @Override
     public Double getAverageRating(Integer restaurantId) {
 

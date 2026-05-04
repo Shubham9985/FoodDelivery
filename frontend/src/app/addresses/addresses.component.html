@@ -1,0 +1,65 @@
+
+<div class="addr-container">
+  <header class="navbar">
+    <button class="logo-btn" routerLink="/home">
+      <span class="logo-mark">🍔</span>
+      <span class="logo-text">FoodieHub</span>
+    </button>
+    <nav>
+      <button class="nav-btn" routerLink="/home">Home</button>
+      <button class="nav-btn" routerLink="/cart">Cart</button>
+      <button class="nav-btn" routerLink="/orders">My Orders</button>
+      <button class="nav-btn active" routerLink="/addresses">Addresses</button>
+      <button class="nav-btn" routerLink="/profile">Profile</button>
+    </nav>
+  </header>
+
+  <div class="addr-wrap">
+    <div class="header-row">
+      <h2 class="page-title">My Addresses</h2>
+      <button class="add-btn" (click)="toggleForm()">{{ showForm ? 'Cancel' : '+ Add Address' }}</button>
+    </div>
+
+    <div *ngIf="message" class="alert" [class.success]="messageType === 'success'" [class.error]="messageType === 'error'">
+      {{ message }}
+    </div>
+
+    <form *ngIf="showForm" [formGroup]="addressForm" (ngSubmit)="saveAddress()" class="addr-form">
+      <div class="field">
+        <label>Address Line</label>
+        <input type="text" formControlName="addressLine" placeholder="123 Main Street" />
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>City</label>
+          <input type="text" formControlName="city" />
+        </div>
+        <div class="field">
+          <label>State</label>
+          <input type="text" formControlName="state" />
+        </div>
+        <div class="field">
+          <label>Pincode</label>
+          <input type="text" formControlName="pincode" />
+        </div>
+      </div>
+      <button type="submit" class="save-btn" [disabled]="addressForm.invalid">Save Address</button>
+    </form>
+
+    <div *ngIf="loading" class="loading">Loading addresses...</div>
+
+    <div *ngIf="!loading && addresses.length === 0 && !showForm" class="empty">
+      <p>📍 No saved addresses yet</p>
+    </div>
+
+    <div class="addr-list" *ngIf="!loading && addresses.length > 0">
+      <div class="addr-card" *ngFor="let addr of addresses">
+        <div class="icon">📍</div>
+        <div class="addr-info">
+          <p class="line">{{ addr.addressLine }}</p>
+          <p class="meta">{{ addr.city }}, {{ addr.state }} - {{ addr.pincode }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

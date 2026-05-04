@@ -1,0 +1,51 @@
+<div class="menu-container">
+  <header class="navbar">
+    <button class="logo-btn" (click)="goBack()">
+      <span class="logo-mark">🍔</span>
+      <span class="logo-text">FoodieHub</span>
+    </button>
+    <nav>
+      <button class="nav-btn" (click)="goBack()">Home</button>
+      <button class="nav-btn" routerLink="/cart">Cart</button>
+      <button class="nav-btn" routerLink="/orders">My Orders</button>
+      <button class="nav-btn" routerLink="/addresses">Addresses</button>
+      <button class="nav-btn" routerLink="/profile">Profile</button>
+    </nav>
+  </header>
+
+  <div class="toast" *ngIf="message" [class.success]="messageType === 'success'" [class.error]="messageType === 'error'">
+    {{ message }}
+  </div>
+
+  <button class="back-btn" (click)="goBack()">← Back</button>
+
+  <section class="restaurant-header" *ngIf="restaurant">
+    <h2>{{ restaurant.restaurantName }}</h2>
+    <p>📍 {{ restaurant.restaurantAddress }}</p>
+    <p>📞 {{ restaurant.restaurantPhone }}</p>
+  </section>
+
+  <section class="menu-section">
+    <h3 class="section-title">Menu</h3>
+    <div *ngIf="loading" class="loading">Loading menu...</div>
+
+    <div class="menu-grid" *ngIf="!loading">
+      <div class="menu-card" *ngFor="let item of menuItems">
+        <div class="menu-image">
+          <img *ngIf="item.itemImageUrl" [src]="item.itemImageUrl" [alt]="item.itemName" />
+          <span *ngIf="!item.itemImageUrl" class="img-placeholder">🍴</span>
+          </div>
+        <div class="menu-body">
+          <h4>{{ item.itemName }}</h4>
+          <p class="desc">{{ item.itemDescription }}</p>
+          <div class="menu-footer">
+            <span class="price">₹{{ item.itemPrice }}</span>
+            <button class="add-btn" (click)="addToCart(item)">Add to Cart</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!loading && menuItems.length === 0" class="empty">No menu items available.</div>
+  </section>
+</div>

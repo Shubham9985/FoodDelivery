@@ -4,9 +4,11 @@ import java.time.LocalDateTime;
 
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 
+import java.util.List;
 import java.util.Set;
 
 
@@ -23,67 +25,39 @@ public class OrderDTO {
     private Integer deliveryDriverId; 
 
     @NotNull(message = "Order status is required")
-    @Size(min = 3, message = "Order status must be valid")
+    @Size(min = 3)
     private String orderStatus;
 
     @NotNull(message = "Order date is required")
     private LocalDateTime orderDate;
+    
+    @NotEmpty(message="Order must have atleast one item")
+    @Valid
+    private List<OrderItemDTO> orderItems;
 
     private Set<Integer> couponIds; 
-    public Integer getOrderId() {
-    	return orderId;
-    }
     
-    public void setOrderId(Integer orderId) {
-    	this.orderId=orderId;
-    }
+    public Integer getOrderId() { return orderId; }
+    public void setOrderId(Integer orderId) { this.orderId = orderId; }
 
-    public Integer getCustomerId() {
-        return customerId;
-    }
+    public Integer getCustomerId() { return customerId; }
+    public void setCustomerId(Integer customerId) { this.customerId = customerId; }
 
-    public void setCustomerId(Integer customerId) {
-        this.customerId = customerId;
-    }
+    public Integer getRestaurantId() { return restaurantId; }
+    public void setRestaurantId(Integer restaurantId) { this.restaurantId = restaurantId; }
 
-    public Integer getRestaurantId() {
-        return restaurantId;
-    }
+    public Integer getDeliveryDriverId() { return deliveryDriverId; }
+    public void setDeliveryDriverId(Integer deliveryDriverId) { this.deliveryDriverId = deliveryDriverId; }
 
-    public void setRestaurantId(Integer restaurantId) {
-        this.restaurantId = restaurantId;
-    }
+    public String getOrderStatus() { return orderStatus; }
+    public void setOrderStatus(String orderStatus) { this.orderStatus = orderStatus; }
 
-    public Integer getDeliveryDriverId() {
-        return deliveryDriverId;
-    }
+    public LocalDateTime getOrderDate() { return orderDate; }
+    public void setOrderDate(LocalDateTime orderDate) { this.orderDate = orderDate; }
 
-    public void setDeliveryDriverId(Integer deliveryDriverId) {
-        this.deliveryDriverId = deliveryDriverId;
-    }
+    public List<OrderItemDTO> getOrderItems() { return orderItems; }
+    public void setOrderItems(List<OrderItemDTO> orderItems) { this.orderItems = orderItems; }
 
-    public String getOrderStatus() {
-        return orderStatus;
-    }
-
-    public void setOrderStatus(String orderStatus) {
-        this.orderStatus = orderStatus;
-    }
-
-    public LocalDateTime getOrderDate() {
-        return orderDate;
-    }
-
-    public void setOrderDate(LocalDateTime orderDate) {
-        this.orderDate = orderDate;
-    }
-
-    public Set<Integer> getCouponIds() {
-        return couponIds;
-    }
-
-    public void setCouponIds(Set<Integer> couponIds) {
-        this.couponIds = couponIds;
-    }
-
+    public Set<Integer> getCouponIds() { return couponIds; }
+    public void setCouponIds(Set<Integer> couponIds) { this.couponIds = couponIds; }
 }

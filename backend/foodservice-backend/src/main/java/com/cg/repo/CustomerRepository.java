@@ -9,6 +9,12 @@ import com.cg.entity.Customer;
 
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Integer> {
-	Optional<Customer> findByCustomerEmail(String email);
 
+    Optional<Customer> findByCustomerEmail(String email);
+
+    Optional<Customer> findByUser_UserId(Integer userId);
+
+    Optional<Customer> findByUser_Email(String email);
+
+    boolean existsByUser_UserId(Integer userId);
 }

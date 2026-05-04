@@ -1,11 +1,14 @@
 package com.cg.exceptions;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -18,16 +21,28 @@ public class GlobalExceptionHandler {
         return buildResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
-    // NAME NOT FOUND
-    @ExceptionHandler(NameNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleNameNotFound(NameNotFoundException ex) {
+    // RESTAURANT NOT FOUND
+    @ExceptionHandler(RestaurantNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleRestaurantNotFound(RestaurantNotFoundException ex) {
         return buildResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
-    // PHONE NUMBER NOT FOUND
-    @ExceptionHandler(PhoneNumberNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handlePhoneNotFound(PhoneNumberNotFoundException ex) {
+    // CUSTOMER NOT FOUND
+    @ExceptionHandler(CustomerNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleCustomerNotFound(CustomerNotFoundException ex) {
         return buildResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    // CART EMPTY
+    @ExceptionHandler(CartEmptyException.class)
+    public ResponseEntity<Map<String, Object>> handleCartEmpty(CartEmptyException ex) {
+        return buildResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    // INVALID QUANTITY
+    @ExceptionHandler(InvalidQuantityException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidQuantity(InvalidQuantityException ex) {
+        return buildResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     // DUPLICATE DATA
@@ -42,12 +57,6 @@ public class GlobalExceptionHandler {
         return buildResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
-    // UNAUTHORIZED
-    @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<Map<String, Object>> handleUnauthorized(UnauthorizedException ex) {
-        return buildResponse(ex.getMessage(), HttpStatus.UNAUTHORIZED);
-    }
-
     // ORDER ERROR
     @ExceptionHandler(OrderException.class)
     public ResponseEntity<Map<String, Object>> handleOrder(OrderException ex) {
@@ -60,20 +69,37 @@ public class GlobalExceptionHandler {
         return buildResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
+    // VALIDATION ERRORS (@Valid on @RequestBody)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
+        Map<String, String> fieldErrors = new HashMap<>();
+        for (FieldError err : ex.getBindingResult().getFieldErrors()) {
+            fieldErrors.put(err.getField(), err.getDefaultMessage());
+        }
+
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", HttpStatus.BAD_REQUEST.getReasonPhrase());
+        body.put("message", "Validation failed");
+        body.put("fieldErrors", fieldErrors);
+
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
     // ALL OTHER EXCEPTIONS
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleAll(Exception ex) {
-        return buildResponse("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+        return buildResponse(ex.getMessage() != null ? ex.getMessage() : "Something went wrong",
+                HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private ResponseEntity<Map<String, Object>> buildResponse(String message, HttpStatus status) {
-
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", status.value());
         body.put("error", status.getReasonPhrase());
         body.put("message", message);
-
         return new ResponseEntity<>(body, status);
     }
 }

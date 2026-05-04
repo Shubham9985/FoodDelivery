@@ -1,0 +1,89 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div>
+      <h2>Coupons</h2>
+      <p class="sub">Manage discount coupons</p>
+    </div>
+    <button class="primary-btn" (click)="openAddForm()">+ Add Coupon</button>
+  </div>
+
+  <div class="toast" [class.success]="messageType==='success'" [class.error]="messageType==='error'" *ngIf="message">
+    {{ message }}
+  </div>
+
+  <!-- Form Modal -->
+  <div class="modal-overlay" *ngIf="showForm" (click)="closeForm()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>{{ editingId ? 'Edit Coupon' : 'Add Coupon' }}</h3>
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="field">
+          <label>Coupon Code</label>
+          <input type="text" formControlName="couponCode" placeholder="e.g. SAVE20" style="text-transform: uppercase" />
+          <small *ngIf="form.get('couponCode')?.touched && form.get('couponCode')?.invalid">
+            3-20 uppercase letters/digits only
+          </small>
+        </div>
+
+        <div class="field">
+          <label>Discount Amount (₹)</label>
+          <input type="number" step="0.01" formControlName="discountAmount" placeholder="0.00" />
+          <small *ngIf="form.get('discountAmount')?.touched && form.get('discountAmount')?.invalid">
+            Discount must be greater than 0
+          </small>
+        </div>
+
+        <div class="field">
+          <label>Expiry Date</label>
+          <input type="date" formControlName="expiryDate" />
+          <small *ngIf="form.get('expiryDate')?.touched && form.get('expiryDate')?.invalid">
+            Expiry date is required
+          </small>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="cancel-btn" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="primary-btn">{{ editingId ? 'Update' : 'Add' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- List -->
+  <div *ngIf="loading" class="loading">Loading coupons...</div>
+
+  <div *ngIf="!loading && coupons.length === 0" class="empty">
+    No coupons yet.
+  </div>
+
+  <div class="data-table" *ngIf="!loading && coupons.length > 0">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Code</th>
+          <th>Discount</th>
+          <th>Expiry Date</th>
+          <th>Status</th>
+          <th class="actions-col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of coupons">
+          <td>{{ c.couponId }}</td>
+          <td><strong class="coupon-code">{{ c.couponCode }}</strong></td>
+          <td>₹{{ c.discountAmount }}</td>
+          <td>{{ c.expiryDate }}</td>
+          <td>
+            <span class="status-badge" [class.delivered]="!isExpired(c.expiryDate)" [class.cancelled]="isExpired(c.expiryDate)">
+              {{ isExpired(c.expiryDate) ? 'Expired' : 'Active' }}
+            </span>
+          </td>
+          <td class="actions">
+            <button class="edit-btn" (click)="openEditForm(c)">Edit</button>
+            <button class="delete-btn" (click)="deleteCoupon(c.couponId)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

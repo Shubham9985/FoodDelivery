@@ -18,6 +18,7 @@ public interface OrderService {
 	OrderResponseDTO updateOrderStatus(Integer orderId,String status);
 	OrderResponseDTO assignDriver(Integer orderId, Integer driverId);
     OrderResponseDTO cancelOrder(Integer orderId);
+    OrderResponseDTO placeOrderFromCart(Integer customerId);
 
     OrderResponseDTO applyCoupon(Integer orderId, Integer couponId);
     OrderResponseDTO removeCoupon(Integer orderId, Integer couponId);
