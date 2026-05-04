@@ -1,0 +1,116 @@
+<div class="cart-container">
+  <header class="navbar">
+    <button class="logo-btn" routerLink="/home">
+      <span class="logo-mark">🍔</span>
+      <span class="logo-text">FoodieHub</span>
+    </button>
+    <nav>
+      <button class="nav-btn" routerLink="/home">Home</button>
+      <button class="nav-btn active" routerLink="/cart">Cart</button>
+      <button class="nav-btn" routerLink="/orders">My Orders</button>
+      <button class="nav-btn" routerLink="/addresses">Addresses</button>
+      <button class="nav-btn" routerLink="/profile">Profile</button>
+    </nav>
+  </header>
+
+  <div class="cart-wrap">
+    <h2 class="page-title">Your Cart</h2>
+
+    <div
+      *ngIf="message"
+      class="alert"
+      [class.success]="messageType === 'success'"
+      [class.error]="messageType === 'error'"
+    >
+      {{ message }}
+    </div>
+
+    <div *ngIf="loading" class="loading">Loading cart...</div>
+
+    <div *ngIf="!loading && itemCount === 0" class="empty-cart">
+      <p>🛒 Your cart is empty</p>
+      <a routerLink="/home" class="browse-btn">Browse Menu</a>
+    </div>
+
+    <div *ngIf="!loading && itemCount > 0" class="cart-content">
+      <div class="cart-items">
+        <div class="cart-item" *ngFor="let item of enrichedItems">
+          <div class="item-image">
+            <img
+              *ngIf="item.itemImageUrl"
+              [src]="item.itemImageUrl"
+              [alt]="item.itemName"
+            />
+            <span *ngIf="!item.itemImageUrl" class="img-placeholder">🍴</span>
+          </div>
+          <div class="item-info">
+            <h4>{{ item.itemName }}</h4>
+            <p class="item-rest" *ngIf="item.restaurantName">
+              📍 {{ item.restaurantName }}
+            </p>
+            <p class="item-unit-price">
+              ₹{{ item.itemPrice }} <span class="per-qty">/ qty</span>
+            </p>
+          </div>
+          <div class="item-actions">
+            <div class="qty-control">
+              <button
+                class="qty-btn"
+                (click)="updateQty(item.itemId, item.quantity - 1)"
+                [disabled]="item.quantity <= 1"
+              >
+                −
+              </button>
+              <span class="qty-val">{{ item.quantity }}</span>
+              <button
+                class="qty-btn"
+                (click)="updateQty(item.itemId, item.quantity + 1)"
+              >
+                +
+              </button>
+            </div>
+            <button class="remove" (click)="removeItem(item.itemId)">
+              Remove
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="cart-summary">
+        <h3>Order Summary</h3>
+        <p>
+          Total Items: <strong>{{ itemCount }}</strong>
+        </p>
+        <p>
+          Subtotal: <strong>₹{{ subTotal }}</strong>
+        </p>
+        <p *ngIf="discountAmount > 0" class="discount-row">
+          Discount ({{ appliedCouponCode }}):
+          <strong>− ₹{{ discountAmount }}</strong>
+        </p>
+        <p class="total-row">
+          Total Amount: <strong>₹{{ cartTotal }}</strong>
+        </p>
+
+        <div class="coupon-input">
+          <input
+            type="text"
+            [(ngModel)]="couponCode"
+            placeholder="Coupon code"
+          />
+          <button class="apply-btn" (click)="applyCouponCode()">Apply</button>
+        </div>
+        <button
+          *ngIf="appliedCouponCode"
+          class="remove-coupon"
+          (click)="clearCoupon()"
+        >
+          Remove coupon
+        </button>
+
+        <button class="checkout-btn" (click)="checkout()">Place Order</button>
+        <button class="clear-btn" (click)="clearCart()">Clear Cart</button>
+      </div>
+    </div>
+  </div>
+</div>
