@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CustomerService } from '../services/customer.service';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-orders',
@@ -17,11 +18,59 @@ export class OrdersComponent implements OnInit {
   loading = false;
   message = '';
   messageType: 'success' | 'error' | '' = '';
+  isLoggedIn = false;
 
-  constructor(private customerService: CustomerService) {}
+  // { [orderId]: { subTotal, discount, couponCode, total } }
+  private pricingMap: {
+    [orderId: number]: {
+      subTotal: number;
+      discount: number;
+      couponCode: string;
+      total: number;
+    };
+  } = {};
+
+  private readonly PRICING_KEY = 'orderPricingMap';
+
+  constructor(
+    private customerService: CustomerService,
+    private authService: AuthService,
+    private router: Router,
+  ) {
+    // Merge any pricing info passed from cart navigation with what's persisted.
+    const nav = this.router.getCurrentNavigation();
+    const incoming = nav?.extras?.state?.['orderPricing'] || {};
+    this.pricingMap = {
+      ...this.loadPersistedPricing(),
+      ...incoming,
+    };
+    this.persistPricing();
+  }
+
+  private loadPersistedPricing(): any {
+    try {
+      if (typeof sessionStorage === 'undefined') return {};
+      const raw = sessionStorage.getItem(this.PRICING_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  }
+
+  private persistPricing(): void {
+    try {
+      if (typeof sessionStorage === 'undefined') return;
+      sessionStorage.setItem(this.PRICING_KEY, JSON.stringify(this.pricingMap));
+    } catch {
+      /* ignore */
+    }
+  }
 
   ngOnInit(): void {
-    this.loadOrders();
+    this.isLoggedIn = this.authService.isAuthenticated();
+    if (this.isLoggedIn) {
+      this.loadOrders();
+    }
   }
 
   loadOrders(): void {
@@ -35,11 +84,23 @@ export class OrdersComponent implements OnInit {
 
         this.customerService.getMyOrders(customerId).subscribe({
           next: (data) => {
-            this.orders = (data || []).map((o: any) => ({
-              ...o,
-              enrichedItems: this.enrichOrderItems(o.items || []),
-              computedTotal: this.computeTotal(o.items || []),
-            }));
+            this.orders = (data || []).map((o: any) => {
+              const subTotal = this.computeTotal(o.items || []);
+              const pricing = this.pricingMap[o.orderId];
+              const discount = pricing?.discount || 0;
+              const couponCode = pricing?.couponCode || '';
+              const finalTotal = pricing
+                ? Math.max(0, subTotal - discount)
+                : subTotal;
+              return {
+                ...o,
+                enrichedItems: this.enrichOrderItems(o.items || []),
+                subTotal,
+                discount,
+                couponCode,
+                computedTotal: finalTotal,
+              };
+            });
             this.loading = false;
           },
           error: () => {
@@ -106,5 +167,14 @@ export class OrdersComponent implements OnInit {
     if (s.includes('cancel')) return 'cancelled';
     if (s.includes('deliver')) return 'delivered';
     return 'progress';
+  }
+
+  goToLogin(): void {
+    this.router.navigate(['/auth']);
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/auth']);
   }
 }

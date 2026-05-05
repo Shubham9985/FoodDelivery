@@ -2,9 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
 import { CustomerService } from '../services/customer.service';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-cart',
@@ -19,18 +18,27 @@ export class CartComponent implements OnInit {
   loading = false;
   message = '';
   messageType: 'success' | 'error' | '' = '';
+  isLoggedIn = false;
 
   couponCode: string = '';
   appliedCouponCode: string = '';
+  appliedCouponId: number | null = null;
   discountAmount: number = 0;
+
+  availableCoupons: any[] = [];
 
   constructor(
     private customerService: CustomerService,
     private router: Router,
+    private authService: AuthService,
   ) {}
 
   ngOnInit(): void {
-    this.loadCart();
+    this.isLoggedIn = this.authService.isAuthenticated();
+    if (this.isLoggedIn) {
+      this.loadCart();
+      this.loadAvailableCoupons();
+    }
   }
 
   loadCart(): void {
@@ -43,6 +51,23 @@ export class CartComponent implements OnInit {
       },
       error: () => {
         this.loading = false;
+      },
+    });
+  }
+
+  loadAvailableCoupons(): void {
+    this.customerService.getAllCoupons().subscribe({
+      next: (coupons: any[]) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        this.availableCoupons = (coupons || []).filter((c) => {
+          if (!c?.expiryDate) return true;
+          const exp = new Date(c.expiryDate);
+          return exp >= today;
+        });
+      },
+      error: () => {
+        this.availableCoupons = [];
       },
     });
   }
@@ -112,6 +137,11 @@ export class CartComponent implements OnInit {
     });
   }
 
+  useCoupon(code: string): void {
+    this.couponCode = code;
+    this.applyCouponCode();
+  }
+
   applyCouponCode(): void {
     const code = (this.couponCode || '').trim();
     if (!code) return;
@@ -119,20 +149,22 @@ export class CartComponent implements OnInit {
     this.customerService.getCouponByCode(code).subscribe({
       next: (coupon: any) => {
         const discount = Number(coupon?.discountAmount) || 0;
-        if (discount <= 0) {
+        if (discount <= 0 || !coupon?.couponId) {
           this.messageType = 'error';
           this.message = 'Invalid coupon';
           setTimeout(() => (this.message = ''), 2500);
           return;
         }
-        this.appliedCouponCode = code;
+        this.appliedCouponCode = coupon.couponCode || code;
+        this.appliedCouponId = coupon.couponId;
         this.discountAmount = discount;
         this.messageType = 'success';
-        this.message = `Coupon "${code}" applied! ₹${discount} off`;
+        this.message = `Coupon "${this.appliedCouponCode}" applied! ₹${discount} off`;
         setTimeout(() => (this.message = ''), 2500);
       },
       error: (err) => {
         this.appliedCouponCode = '';
+        this.appliedCouponId = null;
         this.discountAmount = 0;
         this.messageType = 'error';
         this.message = err.error?.message || 'Invalid coupon';
@@ -144,41 +176,73 @@ export class CartComponent implements OnInit {
   clearCoupon(): void {
     this.couponCode = '';
     this.appliedCouponCode = '';
+    this.appliedCouponId = null;
     this.discountAmount = 0;
   }
 
   checkout(): void {
     const customerId = this.customerService.getCurrentCustomerId();
+    const subTotalAtCheckout = this.subTotal;
+    const discountAtCheckout = this.discountAmount;
+    const couponAtCheckout = this.appliedCouponCode;
+    const couponIdAtCheckout = this.appliedCouponId;
+
     this.customerService.placeOrder(customerId).subscribe({
       next: (order: any) => {
-        if (this.appliedCouponCode && order?.orderId) {
+        const finalize = (msg: string) => {
+          this.messageType = 'success';
+          this.message = msg;
+          const orderInfo = order?.orderId
+            ? {
+                [order.orderId]: {
+                  subTotal: subTotalAtCheckout,
+                  discount: discountAtCheckout,
+                  couponCode: couponAtCheckout,
+                  total: Math.max(0, subTotalAtCheckout - discountAtCheckout),
+                },
+              }
+            : {};
+          setTimeout(
+            () =>
+              this.router.navigate(['/orders'], {
+                state: { orderPricing: orderInfo },
+              }),
+            1800,
+          );
+        };
+
+        if (couponIdAtCheckout && order?.orderId) {
           this.customerService
-            .applyCoupon(order.orderId, this.appliedCouponCode)
+            .applyCoupon(order.orderId, couponIdAtCheckout)
             .subscribe({
-              next: () => {
-                this.messageType = 'success';
-                this.message = 'Order placed & coupon applied!';
-                setTimeout(() => this.router.navigate(['/orders']), 1500);
-              },
+              next: () => finalize('Order placed & coupon applied! 🎉'),
               error: (err) => {
                 this.messageType = 'error';
                 this.message =
                   'Order placed, but coupon failed: ' +
                   (err.error?.message || 'Invalid coupon');
-                setTimeout(() => this.router.navigate(['/orders']), 2000);
+                setTimeout(() => this.router.navigate(['/orders']), 2200);
               },
             });
         } else {
-          this.messageType = 'success';
-          this.message = 'Order placed successfully!';
-          setTimeout(() => this.router.navigate(['/orders']), 1500);
+          finalize('Order placed successfully! 🎉');
         }
       },
       error: (err) => {
         this.messageType = 'error';
         this.message = err.error?.message || 'Failed to place order';
+        setTimeout(() => (this.message = ''), 2500);
       },
     });
+  }
+
+  goToLogin(): void {
+    this.router.navigate(['/auth']);
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/auth']);
   }
 
   get itemCount(): number {

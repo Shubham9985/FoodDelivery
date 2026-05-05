@@ -1,4 +1,3 @@
-
 <div class="addr-container">
   <header class="navbar">
     <button class="logo-btn" routerLink="/home">
@@ -11,55 +10,64 @@
       <button class="nav-btn" routerLink="/orders">My Orders</button>
       <button class="nav-btn active" routerLink="/addresses">Addresses</button>
       <button class="nav-btn" routerLink="/profile" title="Profile">👤</button>
+      <button class="logout-btn" *ngIf="isLoggedIn" (click)="logout()">Logout</button>
+      <button class="logout-btn" *ngIf="!isLoggedIn" (click)="goToLogin()">Login</button>
     </nav>
   </header>
 
   <div class="addr-wrap">
     <div class="header-row">
       <h2 class="page-title">My Addresses</h2>
-      <button class="add-btn" (click)="toggleForm()">{{ showForm ? 'Cancel' : '+ Add Address' }}</button>
+      <button *ngIf="isLoggedIn" class="add-btn" (click)="toggleForm()">{{ showForm ? 'Cancel' : '+ Add Address' }}</button>
     </div>
 
-    <div *ngIf="message" class="alert" [class.success]="messageType === 'success'" [class.error]="messageType === 'error'">
-      {{ message }}
+    <div *ngIf="!isLoggedIn" class="empty">
+      <p>🔒 Please log in to continue</p>
+      <button class="add-btn" style="margin-top: 1rem;" (click)="goToLogin()">Go to Login</button>
     </div>
 
-    <form *ngIf="showForm" [formGroup]="addressForm" (ngSubmit)="saveAddress()" class="addr-form">
-      <div class="field">
-        <label>Address Line</label>
-        <input type="text" formControlName="addressLine" placeholder="123 Main Street" />
+    <ng-container *ngIf="isLoggedIn">
+      <div *ngIf="message" class="alert" [class.success]="messageType === 'success'" [class.error]="messageType === 'error'">
+        {{ message }}
       </div>
-      <div class="row">
+
+      <form *ngIf="showForm" [formGroup]="addressForm" (ngSubmit)="saveAddress()" class="addr-form">
         <div class="field">
-          <label>City</label>
-          <input type="text" formControlName="city" />
+          <label>Address Line</label>
+          <input type="text" formControlName="addressLine" placeholder="123 Main Street" />
         </div>
-        <div class="field">
-          <label>State</label>
-          <input type="text" formControlName="state" />
+        <div class="row">
+          <div class="field">
+            <label>City</label>
+            <input type="text" formControlName="city" />
+          </div>
+          <div class="field">
+            <label>State</label>
+            <input type="text" formControlName="state" />
+          </div>
+          <div class="field">
+            <label>Pincode</label>
+            <input type="text" formControlName="pincode" />
+          </div>
         </div>
-        <div class="field">
-          <label>Pincode</label>
-          <input type="text" formControlName="pincode" />
+        <button type="submit" class="save-btn" [disabled]="addressForm.invalid">Save Address</button>
+      </form>
+
+      <div *ngIf="loading" class="loading">Loading addresses...</div>
+
+      <div *ngIf="!loading && addresses.length === 0 && !showForm" class="empty">
+        <p>📍 No saved addresses yet</p>
+      </div>
+
+      <div class="addr-list" *ngIf="!loading && addresses.length > 0">
+        <div class="addr-card" *ngFor="let addr of addresses">
+          <div class="icon">📍</div>
+          <div class="addr-info">
+            <p class="line">{{ addr.addressLine }}</p>
+            <p class="meta">{{ addr.city }}, {{ addr.state }} - {{ addr.pincode }}</p>
+          </div>
         </div>
       </div>
-      <button type="submit" class="save-btn" [disabled]="addressForm.invalid">Save Address</button>
-    </form>
-
-    <div *ngIf="loading" class="loading">Loading addresses...</div>
-
-    <div *ngIf="!loading && addresses.length === 0 && !showForm" class="empty">
-      <p>📍 No saved addresses yet</p>
-    </div>
-
-    <div class="addr-list" *ngIf="!loading && addresses.length > 0">
-      <div class="addr-card" *ngFor="let addr of addresses">
-        <div class="icon">📍</div>
-        <div class="addr-info">
-          <p class="line">{{ addr.addressLine }}</p>
-          <p class="meta">{{ addr.city }}, {{ addr.state }} - {{ addr.pincode }}</p>
-        </div>
-      </div>
-    </div>
+    </ng-container>
   </div>
 </div>

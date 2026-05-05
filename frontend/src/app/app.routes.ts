@@ -15,19 +15,22 @@ import { AdminCouponsComponent } from './admin/coupons/admin-coupons/admin-coupo
 import { AdminOrdersComponent } from './admin/orders/admin-orders/admin-orders.component';
 import { AdminCustomerComponent } from './admin/customer/admin-customer/admin-customer.component';
 
+import { authGuard } from './core/guards/auth.guard';
+import { adminGuard } from './core/guards/admin.guard';
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: 'auth', component: AuthComponent },
   { path: 'home', component: HomeComponent },
   { path: 'restaurant/:id', component: RestaurantMenuComponent },
-  { path: 'cart', component: CartComponent },
-  { path: 'orders', component: OrdersComponent },
-  { path: 'addresses', component: AddressesComponent },
-  { path: 'profile', component: ProfileComponent },
+  { path: 'cart', component: CartComponent, canActivate: [authGuard] },
+  { path: 'orders', component: OrdersComponent, canActivate: [authGuard] },
+  { path: 'addresses', component: AddressesComponent, canActivate: [authGuard] },
+  { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
 
   {
     path: 'admin',
     component: AdminDashboardComponent,
+    canActivate: [adminGuard],
     children: [
       { path: 'restaurants', component: AdminRestaurantsComponent },
       { path: 'menu-items', component: AdminMenuItemsComponent },

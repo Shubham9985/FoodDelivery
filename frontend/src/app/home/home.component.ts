@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
@@ -38,10 +38,13 @@ export class HomeComponent implements OnInit {
   selectedRestaurantId: number | null = null;
   sortBy: 'default' | 'priceAsc' | 'priceDesc' | 'nameAsc' | 'ratingDesc' = 'default';
 
+  private toastTimer: any = null;
+
   constructor(
     private customerService: CustomerService,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -164,7 +167,6 @@ export class HomeComponent implements OnInit {
   applyFilters(): void {
     if (this.view === 'items') {
       let filtered = [...this.allMenuItems];
-
       const kw = this.activeSearchKeyword.trim().toLowerCase();
       if (kw) {
         filtered = filtered.filter(i =>
@@ -172,25 +174,16 @@ export class HomeComponent implements OnInit {
           (i.restaurantName || '').toLowerCase().includes(kw)
         );
       }
-
-      if (this.minPrice != null) {
-        filtered = filtered.filter(i => Number(i.itemPrice) >= this.minPrice!);
-      }
-      if (this.maxPrice != null) {
-        filtered = filtered.filter(i => Number(i.itemPrice) <= this.maxPrice!);
-      }
-      if (this.minRating > 0) {
-        filtered = filtered.filter(i => this.getRating(i.restaurantId) >= this.minRating);
-      }
+      if (this.minPrice != null) filtered = filtered.filter(i => Number(i.itemPrice) >= this.minPrice!);
+      if (this.maxPrice != null) filtered = filtered.filter(i => Number(i.itemPrice) <= this.maxPrice!);
+      if (this.minRating > 0) filtered = filtered.filter(i => this.getRating(i.restaurantId) >= this.minRating);
       if (this.selectedRestaurantId != null) {
         filtered = filtered.filter(i => i.restaurantId === Number(this.selectedRestaurantId));
       }
-
       filtered = this.sortItems(filtered);
       this.menuItems = filtered;
     } else {
       let filtered = [...this.allRestaurants];
-
       const kw = this.activeSearchKeyword.trim().toLowerCase();
       if (kw) {
         filtered = filtered.filter(r =>
@@ -198,11 +191,7 @@ export class HomeComponent implements OnInit {
           (r.restaurantAddress || '').toLowerCase().includes(kw)
         );
       }
-
-      if (this.minRating > 0) {
-        filtered = filtered.filter(r => this.getRating(r.restaurantId) >= this.minRating);
-      }
-
+      if (this.minRating > 0) filtered = filtered.filter(r => this.getRating(r.restaurantId) >= this.minRating);
       filtered = this.sortRestaurants(filtered);
       this.restaurants = filtered;
     }
@@ -211,28 +200,20 @@ export class HomeComponent implements OnInit {
   sortItems(list: any[]): any[] {
     const arr = [...list];
     switch (this.sortBy) {
-      case 'priceAsc':
-        return arr.sort((a, b) => Number(a.itemPrice) - Number(b.itemPrice));
-      case 'priceDesc':
-        return arr.sort((a, b) => Number(b.itemPrice) - Number(a.itemPrice));
-      case 'nameAsc':
-        return arr.sort((a, b) => (a.itemName || '').localeCompare(b.itemName || ''));
-      case 'ratingDesc':
-        return arr.sort((a, b) => this.getRating(b.restaurantId) - this.getRating(a.restaurantId));
-      default:
-        return arr;
+      case 'priceAsc': return arr.sort((a, b) => Number(a.itemPrice) - Number(b.itemPrice));
+      case 'priceDesc': return arr.sort((a, b) => Number(b.itemPrice) - Number(a.itemPrice));
+      case 'nameAsc': return arr.sort((a, b) => (a.itemName || '').localeCompare(b.itemName || ''));
+      case 'ratingDesc': return arr.sort((a, b) => this.getRating(b.restaurantId) - this.getRating(a.restaurantId));
+      default: return arr;
     }
   }
 
   sortRestaurants(list: any[]): any[] {
     const arr = [...list];
     switch (this.sortBy) {
-      case 'nameAsc':
-        return arr.sort((a, b) => (a.restaurantName || '').localeCompare(b.restaurantName || ''));
-      case 'ratingDesc':
-        return arr.sort((a, b) => this.getRating(b.restaurantId) - this.getRating(a.restaurantId));
-      default:
-        return arr;
+      case 'nameAsc': return arr.sort((a, b) => (a.restaurantName || '').localeCompare(b.restaurantName || ''));
+      case 'ratingDesc': return arr.sort((a, b) => this.getRating(b.restaurantId) - this.getRating(a.restaurantId));
+      default: return arr;
     }
   }
 
@@ -242,7 +223,6 @@ export class HomeComponent implements OnInit {
   }
 
   onSearchChange(newValue: string): void {
-    // Only react when user is deleting characters (new value is shorter than active)
     if (newValue.length < this.activeSearchKeyword.length) {
       this.activeSearchKeyword = newValue;
       this.applyFilters();
@@ -259,35 +239,58 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  /**
+   * Centralized toast helper. Clears any existing timer, sets the message,
+   * forces change detection, and auto-dismisses after the given duration.
+   */
+  private showToast(text: string, type: 'success' | 'error', durationMs = 2500): void {
+    if (this.toastTimer) {
+      clearTimeout(this.toastTimer);
+      this.toastTimer = null;
+    }
+    // Reset first so a repeated message re-triggers the slide-in animation
+    this.message = '';
+    this.messageType = '';
+    this.cdr.detectChanges();
+
+    this.messageType = type;
+    this.message = text;
+    this.cdr.detectChanges();
+
+    this.toastTimer = setTimeout(() => {
+      this.message = '';
+      this.messageType = '';
+      this.cdr.detectChanges();
+    }, durationMs);
+  }
+
   addToCart(item: any): void {
+    // Require login before hitting the cart endpoint (cart is CUSTOMER-only on backend).
+    if (!this.authService.isAuthenticated()) {
+      this.showToast('Please log in to add items to your cart', 'error');
+      return;
+    }
+
     const customerId = this.customerService.getCurrentCustomerId();
     const qty = this.quantities[item.itemId] || 1;
+
     this.customerService.addToCart(customerId, item.itemId, qty).subscribe({
       next: () => {
-        this.messageType = 'success';
-        this.message = `${qty} × ${item.itemName} added to cart`;
-        setTimeout(() => this.message = '', 2200);
+        this.showToast(`${qty} × ${item.itemName} added to cart 🛒`, 'success');
       },
       error: (err) => {
-        this.messageType = 'error';
-        this.message = err.error?.message || 'Failed to add item';
-        setTimeout(() => this.message = '', 2500);
+        const msg = err?.error?.message || 'Failed to add item to cart';
+        this.showToast(msg, 'error');
       }
     });
   }
 
-  viewRestaurant(id: number): void {
-    this.router.navigate(['/restaurant', id]);
-  }
-
+  viewRestaurant(id: number): void { this.router.navigate(['/restaurant', id]); }
   goCart(): void { this.router.navigate(['/cart']); }
   goOrders(): void { this.router.navigate(['/orders']); }
   goAddresses(): void { this.router.navigate(['/addresses']); }
   goHome(): void { this.showItems(); }
-
-  login(): void {
-    this.router.navigate(['/auth']);
-  }
+  login(): void { this.router.navigate(['/auth']); }
 
   logout(): void {
     this.authService.logout();

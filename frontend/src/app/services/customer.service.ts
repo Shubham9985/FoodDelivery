@@ -14,9 +14,21 @@ export class CustomerService {
     return new HttpHeaders({ Authorization: `Bearer ${user.token || ''}` });
   }
 
+  /**
+   * Returns the *real* customerId of the logged-in user. Returns 0 if no
+   * customer is logged in — callers should treat 0 as "not authenticated"
+   * rather than silently hitting customer #1's data.
+   */
   getCurrentCustomerId(): number {
     const user = getStoredUser() || {};
-    return user.customerId || 1;
+    const id = Number(user.customerId);
+    return Number.isFinite(id) && id > 0 ? id : 0;
+  }
+
+  getCurrentUserId(): number {
+    const user = getStoredUser() || {};
+    const id = Number(user.userId);
+    return Number.isFinite(id) && id > 0 ? id : 0;
   }
 
   // Restaurants
@@ -71,13 +83,17 @@ export class CustomerService {
     return this.http.put<any>(`${this.baseUrl}/orders/${orderId}/cancel`, {}, { headers: this.authHeaders() });
   }
 
- // Coupons
-  applyCoupon(orderId: number, code: string): Observable<any> {
-    return this.http.put<any>(`${this.baseUrl}/orders/${orderId}/coupon/${code}`, {}, { headers: this.authHeaders() });
+  // Coupons
+  applyCoupon(orderId: number, couponId: number): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/orders/${orderId}/coupon/${couponId}`, {}, { headers: this.authHeaders() });
   }
 
   getCouponByCode(code: string): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/coupons/code/${code}`, { headers: this.authHeaders() });
+  }
+
+  getAllCoupons(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/coupons`, { headers: this.authHeaders() });
   }
 
   // Addresses
@@ -90,18 +106,18 @@ export class CustomerService {
   }
 
   getAllMenuItems(): Observable<any[]> {
-  return this.http.get<any[]>(`${this.baseUrl}/menu-items`, { headers: this.authHeaders() });
-}
+    return this.http.get<any[]>(`${this.baseUrl}/menu-items`, { headers: this.authHeaders() });
+  }
 
-getAverageRating(restaurantId: number): Observable<number> {
-  return this.http.get<number>(`${this.baseUrl}/ratings/restaurant/${restaurantId}/average`, { headers: this.authHeaders() });
-}
+  getAverageRating(restaurantId: number): Observable<number> {
+    return this.http.get<number>(`${this.baseUrl}/ratings/restaurant/${restaurantId}/average`, { headers: this.authHeaders() });
+  }
 
-getProfile(customerId: number): Observable<any> {
-  return this.http.get<any>(`${this.baseUrl}/customers/${customerId}`, { headers: this.authHeaders() });
-}
+  getProfile(customerId: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/customers/${customerId}`, { headers: this.authHeaders() });
+  }
 
-updateProfile(customerId: number, payload: any): Observable<any> {
-  return this.http.put<any>(`${this.baseUrl}/customers/${customerId}`, payload, { headers: this.authHeaders() });
-}
+  updateProfile(customerId: number, payload: any): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/customers/${customerId}`, payload, { headers: this.authHeaders() });
+  }
 }

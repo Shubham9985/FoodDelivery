@@ -10,10 +10,18 @@
       <button class="nav-btn" routerLink="/orders">My Orders</button>
       <button class="nav-btn" routerLink="/addresses">Addresses</button>
       <button class="nav-btn" routerLink="/profile">Profile</button>
+      <button class="logout-btn" *ngIf="!isLoggedIn" (click)="login()">Login</button>
+      <button class="logout-btn" *ngIf="isLoggedIn" (click)="logout()">Logout</button>
     </nav>
   </header>
 
-  <div class="toast" *ngIf="message" [class.success]="messageType === 'success'" [class.error]="messageType === 'error'">
+  <!-- Toast is always in the DOM; the `.visible` class controls show/hide.
+       This avoids any *ngIf timing or change-detection issues. -->
+  <div
+    class="rm-toast"
+    [class.visible]="toastVisible"
+    [class.success]="messageType === 'success'"
+    [class.error]="messageType === 'error'">
     {{ message }}
   </div>
 
@@ -34,7 +42,7 @@
         <div class="menu-image">
           <img *ngIf="item.itemImageUrl" [src]="item.itemImageUrl" [alt]="item.itemName" />
           <span *ngIf="!item.itemImageUrl" class="img-placeholder">🍴</span>
-          </div>
+        </div>
         <div class="menu-body">
           <h4>{{ item.itemName }}</h4>
           <p class="desc">{{ item.itemDescription }}</p>

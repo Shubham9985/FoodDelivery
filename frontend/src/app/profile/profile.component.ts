@@ -45,6 +45,14 @@ export class ProfileComponent implements OnInit {
   loadProfile(): void {
     this.loading = true;
     const customerId = this.customerService.getCurrentCustomerId();
+
+    if (!customerId) {
+      this.loading = false;
+      this.messageType = 'error';
+      this.message = 'No customer profile linked to this account. Please log in again.';
+      return;
+    }
+
     this.customerService.getProfile(customerId).subscribe({
       next: (data) => {
         this.profile = data;
@@ -68,8 +76,9 @@ export class ProfileComponent implements OnInit {
     this.editMode = !this.editMode;
     if (this.editMode) {
       this.profileForm.enable();
+      this.profileForm.markAsPristine();
     } else {
-      this.profileForm.disable();
+      // Cancel — restore original values and disable
       if (this.profile) {
         this.profileForm.patchValue({
           customerName: this.profile.customerName,
@@ -77,35 +86,57 @@ export class ProfileComponent implements OnInit {
           customerPhone: this.profile.customerPhone
         });
       }
+      this.profileForm.disable();
     }
   }
 
   saveProfile(): void {
     if (this.profileForm.invalid) {
       this.profileForm.markAllAsTouched();
+      this.messageType = 'error';
+      this.message = 'Please fix the highlighted fields before saving.';
+      setTimeout(() => (this.message = ''), 2500);
       return;
     }
+
     this.saving = true;
     const customerId = this.customerService.getCurrentCustomerId();
+
+    // The backend CustomerDTO requires userId — pull it from the loaded
+    // profile, falling back to whatever the auth service stored at login.
+    const userId =
+      this.profile?.userId ??
+      this.profile?.user?.userId ??
+      this.customerService.getCurrentUserId();
+
     const payload = {
-      ...this.profileForm.value,
-      userId: this.profile?.userId
+      customerId,
+      customerName: this.profileForm.value.customerName,
+      customerEmail: this.profileForm.value.customerEmail,
+      customerPhone: this.profileForm.value.customerPhone,
+      userId
     };
+
     this.customerService.updateProfile(customerId, payload).subscribe({
       next: (data) => {
         this.profile = data;
+        this.profileForm.patchValue({
+          customerName: data.customerName,
+          customerEmail: data.customerEmail,
+          customerPhone: data.customerPhone
+        });
         this.editMode = false;
         this.profileForm.disable();
         this.saving = false;
         this.messageType = 'success';
         this.message = 'Profile updated successfully';
-        setTimeout(() => this.message = '', 2500);
+        setTimeout(() => (this.message = ''), 2500);
       },
       error: (err) => {
         this.saving = false;
         this.messageType = 'error';
         this.message = err.error?.message || 'Failed to update profile';
-        setTimeout(() => this.message = '', 3000);
+        setTimeout(() => (this.message = ''), 3000);
       }
     });
   }
