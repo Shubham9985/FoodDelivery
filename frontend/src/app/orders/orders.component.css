@@ -374,3 +374,20 @@
   background: #ff4757;
   transform: translateY(-1px);
 }
+
+.order-address {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  margin: 0 0 0.85rem !important;
+  padding: 0.6rem 0.75rem;
+  background: #fff7f5;
+  border: 1px dashed #ffd1d4;
+  border-radius: 10px;
+  color: #4b5563;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+.order-address .addr-icon {
+  flex-shrink: 0;
+}
