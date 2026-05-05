@@ -4,7 +4,7 @@
       <h2>Menu Items</h2>
       <p class="sub">Manage all menu items across restaurants</p>
     </div>
-    <button class="primary-btn" (click)="openAddForm()">+ Add Menu Item</button>
+    <button type="button" class="primary-btn" (click)="openAddForm()">+ Add Menu Item</button>
   </div>
 
   <div class="toast" [class.success]="messageType==='success'" [class.error]="messageType==='error'" *ngIf="message">
@@ -93,8 +93,8 @@
           <td>₹{{ item.itemPrice }}</td>
           <td>{{ item.restaurantName || ('Restaurant ' + item.restaurantId) }}</td>
           <td class="actions">
-            <button class="edit-btn" (click)="openEditForm(item)">Edit</button>
-            <button class="delete-btn" (click)="deleteItem(item.itemId)">Delete</button>
+            <button type="button" class="edit-btn" (click)="openEditForm(item)">Edit</button>
+            <button type="button" class="delete-btn" (click)="deleteItem(item.itemId)">Delete</button>
           </td>
         </tr>
       </tbody>

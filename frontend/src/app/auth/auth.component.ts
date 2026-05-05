@@ -191,7 +191,9 @@ export class AuthComponent {
       next: (res) => {
         this.loading = false;
 
-        if (this.adminLoginMode && res?.role !== 'ADMIN') {
+        const role = String(res?.role || '').toUpperCase();
+
+        if (this.adminLoginMode && !role.includes('ADMIN')) {
           this.messageType = 'error';
           this.message = 'These credentials are not for an admin account.';
           return;
@@ -203,7 +205,7 @@ export class AuthComponent {
           window.localStorage.setItem('user', JSON.stringify(res));
         }
 
-        if (res?.role === 'ADMIN') {
+        if (role.includes('ADMIN')) {
           this.router.navigate(['/admin']);
         } else {
           this.router.navigate(['/home']);

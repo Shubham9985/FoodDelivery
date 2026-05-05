@@ -4,7 +4,7 @@
       <h2>Restaurants</h2>
       <p class="sub">Manage all restaurants on the platform</p>
     </div>
-    <button class="primary-btn" (click)="openAddForm()">+ Add Restaurant</button>
+    <button type="button" class="primary-btn" (click)="openAddForm()">+ Add Restaurant</button>
   </div>
 
   <div class="toast" [class.success]="messageType==='success'" [class.error]="messageType==='error'" *ngIf="message">
@@ -77,8 +77,8 @@
           <td>{{ r.menuItemIds?.length || 0 }}</td>
           <td>{{ r.orderIds?.length || 0 }}</td>
           <td class="actions">
-            <button class="edit-btn" (click)="openEditForm(r)">Edit</button>
-            <button class="delete-btn" (click)="deleteRestaurant(r.restaurantId)">Delete</button>
+            <button type="button" class="edit-btn" (click)="openEditForm(r)">Edit</button>
+            <button type="button" class="delete-btn" (click)="deleteRestaurant(r.restaurantId)">Delete</button>
           </td>
         </tr>
       </tbody>

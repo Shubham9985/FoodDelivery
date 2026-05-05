@@ -33,10 +33,13 @@ export class AdminDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     const user = getStoredUser() || {};
-    if (user?.role !== 'ADMIN') {
+    const role = String(user?.role || '').toUpperCase();
+
+    if (!role.includes('ADMIN')) {
       this.router.navigate(['/auth']);
       return;
     }
+
     this.adminName = user?.name || 'Admin';
     this.isRootPath = this.router.url === '/admin' || this.router.url === '/admin/';
     this.loadStats();
