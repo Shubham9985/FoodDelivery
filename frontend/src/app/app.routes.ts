@@ -32,6 +32,7 @@ export const routes: Routes = [
     component: AdminDashboardComponent,
     canActivate: [adminGuard],
     children: [
+      { path: '', redirectTo: 'restaurants', pathMatch: 'full' },
       { path: 'restaurants', component: AdminRestaurantsComponent },
       { path: 'menu-items', component: AdminMenuItemsComponent },
       { path: 'drivers', component: AdminDriversComponent },
