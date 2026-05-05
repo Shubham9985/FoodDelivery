@@ -4,7 +4,7 @@
       <h2>Delivery Drivers</h2>
       <p class="sub">Manage all delivery drivers</p>
     </div>
-    <button class="primary-btn" (click)="openAddForm()">+ Add Driver</button>
+    <button type="button" class="primary-btn" (click)="openAddForm()">+ Add Driver</button>
   </div>
 
   <div class="toast" [class.success]="messageType==='success'" [class.error]="messageType==='error'" *ngIf="message">
@@ -73,8 +73,8 @@
           <td>{{ d.driverPhone }}</td>
           <td>{{ d.driverVehicle }}</td>
           <td class="actions">
-            <button class="edit-btn" (click)="openEditForm(d)">Edit</button>
-            <button class="delete-btn" (click)="deleteDriver(d.driverId)">Delete</button>
+            <button type="button" class="edit-btn" (click)="openEditForm(d)">Edit</button>
+            <button type="button" class="delete-btn" (click)="deleteDriver(d.driverId)">Delete</button>
           </td>
         </tr>
       </tbody>
