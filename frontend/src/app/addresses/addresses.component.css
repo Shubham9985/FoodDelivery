@@ -199,3 +199,22 @@
   .navbar nav { flex-wrap: wrap; }
   .addr-wrap { padding: 0 1rem; }
 }
+
+.logout-btn {
+  background: #1a1a2e;
+  color: #fff;
+  border: none;
+  padding: 0.55rem 1.25rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+  transition: all 0.18s ease;
+}
+.logout-btn:hover {
+  background: #ff4757;
+  transform: translateY(-1px);
+}
+ 

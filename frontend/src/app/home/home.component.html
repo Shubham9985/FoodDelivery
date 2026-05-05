@@ -12,6 +12,7 @@
       <button class="nav-btn" (click)="goAddresses()">Addresses</button>
       <button class="nav-btn" (click)="goProfile()" title="Profile">👤</button>
       <button class="logout-btn" *ngIf="!isLoggedIn" (click)="login()">Login</button>
+      <button class="logout-btn" *ngIf="isLoggedIn" (click)="logout()">Logout</button>
     </nav>
   </header>
 
@@ -44,7 +45,6 @@
 
     <!-- FILTER PANEL -->
     <div class="filter-panel" *ngIf="showFilters">
-      <!-- SAME CODE (unchanged) -->
       <div class="filter-group" *ngIf="view === 'items'">
         <label>Min Price (₹)</label>
         <input type="number" min="0" [(ngModel)]="minPrice" (ngModelChange)="applyFilters()" />

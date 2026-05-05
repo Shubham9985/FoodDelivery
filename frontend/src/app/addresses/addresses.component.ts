@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CustomerService } from '../services/customer.service';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-addresses',
@@ -18,8 +19,14 @@ export class AddressesComponent implements OnInit {
   addressForm: FormGroup;
   message = '';
   messageType: 'success' | 'error' | '' = '';
+  isLoggedIn = false;
 
-  constructor(private fb: FormBuilder, private customerService: CustomerService) {
+  constructor(
+    private fb: FormBuilder,
+    private customerService: CustomerService,
+    private authService: AuthService,
+    private router: Router,
+  ) {
     this.addressForm = this.fb.group({
       addressLine: ['', Validators.required],
       city: ['', Validators.required],
@@ -28,7 +35,12 @@ export class AddressesComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void { this.loadAddresses(); }
+  ngOnInit(): void {
+    this.isLoggedIn = this.authService.isAuthenticated();
+    if (this.isLoggedIn) {
+      this.loadAddresses();
+    }
+  }
 
   loadAddresses(): void {
     this.loading = true;
@@ -66,5 +78,14 @@ export class AddressesComponent implements OnInit {
         setTimeout(() => this.message = '', 2500);
       }
     });
+  }
+
+  goToLogin(): void {
+    this.router.navigate(['/auth']);
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/auth']);
   }
 }
