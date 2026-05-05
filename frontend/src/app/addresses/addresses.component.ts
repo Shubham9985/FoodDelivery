@@ -28,10 +28,10 @@ export class AddressesComponent implements OnInit {
     private router: Router,
   ) {
     this.addressForm = this.fb.group({
-      addressLine: ['', Validators.required],
+      addressLine1: ['', Validators.required],
       city: ['', Validators.required],
       state: ['', Validators.required],
-      pincode: ['', [Validators.required, Validators.pattern(/^[0-9]{5,6}$/)]]
+      postalCode: ['', [Validators.required, Validators.pattern(/^[0-9]{5,6}$/)]]
     });
   }
 

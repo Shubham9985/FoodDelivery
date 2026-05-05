@@ -34,7 +34,7 @@
       <form *ngIf="showForm" [formGroup]="addressForm" (ngSubmit)="saveAddress()" class="addr-form">
         <div class="field">
           <label>Address Line</label>
-          <input type="text" formControlName="addressLine" placeholder="123 Main Street" />
+          <input type="text" formControlName="addressLine1" placeholder="123 Main Street" />
         </div>
         <div class="row">
           <div class="field">
@@ -46,8 +46,8 @@
             <input type="text" formControlName="state" />
           </div>
           <div class="field">
-            <label>Pincode</label>
-            <input type="text" formControlName="pincode" />
+            <label>postalcode</label>
+            <input type="text" formControlName="postalCode" />
           </div>
         </div>
         <button type="submit" class="save-btn" [disabled]="addressForm.invalid">Save Address</button>
@@ -63,8 +63,8 @@
         <div class="addr-card" *ngFor="let addr of addresses">
           <div class="icon">📍</div>
           <div class="addr-info">
-            <p class="line">{{ addr.addressLine }}</p>
-            <p class="meta">{{ addr.city }}, {{ addr.state }} - {{ addr.pincode }}</p>
+            <p class="line">{{ addr.addressLine1 }}</p>
+            <p class="meta">{{ addr.city }}, {{ addr.state }} - {{ addr.postalCode }}</p>
           </div>
         </div>
       </div>
