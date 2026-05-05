@@ -27,6 +27,20 @@ export class CartComponent implements OnInit {
 
   availableCoupons: any[] = [];
 
+  addresses: any[] = [];
+  selectedAddressId: number | null = null;
+
+  // New-address form state
+  showNewAddressForm = false;
+  newAddress: any = {
+    addressLine1: '',
+    addressLine2: '',
+    city: '',
+    state: '',
+    postalCode: '',
+  };
+  savingAddress = false;
+
   constructor(
     private customerService: CustomerService,
     private router: Router,
@@ -38,6 +52,7 @@ export class CartComponent implements OnInit {
     if (this.isLoggedIn) {
       this.loadCart();
       this.loadAvailableCoupons();
+      this.loadAddresses();
     }
   }
 
@@ -68,6 +83,92 @@ export class CartComponent implements OnInit {
       },
       error: () => {
         this.availableCoupons = [];
+      },
+    });
+  }
+
+  loadAddresses(): void {
+    const customerId = this.customerService.getCurrentCustomerId();
+    this.customerService.getMyAddresses(customerId).subscribe({
+      next: (data: any[]) => {
+        this.addresses = data || [];
+        if (this.addresses.length > 0 && this.selectedAddressId == null) {
+          this.selectedAddressId = this.addresses[0].addressId;
+        }
+        if (this.addresses.length === 0) {
+          this.showNewAddressForm = true;
+        }
+      },
+      error: () => {
+        this.addresses = [];
+        this.showNewAddressForm = true;
+      },
+    });
+  }
+
+  formatAddress(a: any): string {
+    if (!a) return '';
+    const parts = [
+      a.addressLine1,
+      a.addressLine2,
+      a.city,
+      a.state,
+      a.postalCode,
+    ].filter((p) => p && String(p).trim().length > 0);
+    return parts.join(', ');
+  }
+
+  toggleNewAddressForm(): void {
+    this.showNewAddressForm = !this.showNewAddressForm;
+  }
+
+  saveNewAddress(): void {
+    const a = this.newAddress;
+    if (
+      !a.addressLine1?.trim() ||
+      !a.city?.trim() ||
+      !a.state?.trim() ||
+      !a.postalCode?.trim()
+    ) {
+      this.messageType = 'error';
+      this.message = 'Please fill in line 1, city, state and postal code';
+      setTimeout(() => (this.message = ''), 2500);
+      return;
+    }
+
+    const customerId = this.customerService.getCurrentCustomerId();
+    const payload = {
+      addressLine1: a.addressLine1.trim(),
+      addressLine2: a.addressLine2?.trim() || '',
+      city: a.city.trim(),
+      state: a.state.trim(),
+      postalCode: a.postalCode.trim(),
+      customerId,
+    };
+
+    this.savingAddress = true;
+    this.customerService.addAddress(payload).subscribe({
+      next: (saved: any) => {
+        this.savingAddress = false;
+        this.addresses = [...this.addresses, saved];
+        this.selectedAddressId = saved.addressId;
+        this.showNewAddressForm = false;
+        this.newAddress = {
+          addressLine1: '',
+          addressLine2: '',
+          city: '',
+          state: '',
+          postalCode: '',
+        };
+        this.messageType = 'success';
+        this.message = 'Address added';
+        setTimeout(() => (this.message = ''), 2000);
+      },
+      error: (err) => {
+        this.savingAddress = false;
+        this.messageType = 'error';
+        this.message = err.error?.message || 'Failed to save address';
+        setTimeout(() => (this.message = ''), 2500);
       },
     });
   }
@@ -180,18 +281,57 @@ export class CartComponent implements OnInit {
     this.discountAmount = 0;
   }
 
+  /**
+   * Persist the order -> address association in browser storage.
+   * Keyed by orderId so the orders page can pick it up after navigation.
+   */
+  private persistOrderAddress(orderId: number, address: any): void {
+    try {
+      if (typeof sessionStorage === 'undefined') return;
+      const KEY = 'orderAddressMap';
+      const raw = sessionStorage.getItem(KEY);
+      const map = raw ? JSON.parse(raw) : {};
+      map[orderId] = {
+        addressId: address.addressId,
+        addressLine1: address.addressLine1,
+        addressLine2: address.addressLine2,
+        city: address.city,
+        state: address.state,
+        postalCode: address.postalCode,
+      };
+      sessionStorage.setItem(KEY, JSON.stringify(map));
+    } catch {
+      /* ignore */
+    }
+  }
+
   checkout(): void {
+    if (this.addresses.length === 0 || !this.selectedAddressId) {
+      this.messageType = 'error';
+      this.message = 'Please add and select a delivery address';
+      setTimeout(() => (this.message = ''), 3000);
+      return;
+    }
+
     const customerId = this.customerService.getCurrentCustomerId();
     const subTotalAtCheckout = this.subTotal;
     const discountAtCheckout = this.discountAmount;
     const couponAtCheckout = this.appliedCouponCode;
     const couponIdAtCheckout = this.appliedCouponId;
+    const chosenAddress = this.addresses.find(
+      (a) => a.addressId === this.selectedAddressId,
+    );
 
     this.customerService.placeOrder(customerId).subscribe({
       next: (order: any) => {
-        const finalize = (msg: string) => {
-          this.messageType = 'success';
-          this.message = msg;
+        if (order?.orderId && chosenAddress) {
+          this.persistOrderAddress(order.orderId, chosenAddress);
+        }
+
+        const navigateWithToast = (
+          toastMsg: string,
+          toastType: 'success' | 'error',
+        ) => {
           const orderInfo = order?.orderId
             ? {
                 [order.orderId]: {
@@ -202,30 +342,32 @@ export class CartComponent implements OnInit {
                 },
               }
             : {};
-          setTimeout(
-            () =>
-              this.router.navigate(['/orders'], {
-                state: { orderPricing: orderInfo },
-              }),
-            1800,
-          );
+          this.router.navigate(['/orders'], {
+            state: {
+              orderPricing: orderInfo,
+              toast: { message: toastMsg, type: toastType },
+            },
+          });
         };
 
         if (couponIdAtCheckout && order?.orderId) {
           this.customerService
             .applyCoupon(order.orderId, couponIdAtCheckout)
             .subscribe({
-              next: () => finalize('Order placed & coupon applied! 🎉'),
-              error: (err) => {
-                this.messageType = 'error';
-                this.message =
+              next: () =>
+                navigateWithToast(
+                  'Order placed & coupon applied! 🎉',
+                  'success',
+                ),
+              error: (err) =>
+                navigateWithToast(
                   'Order placed, but coupon failed: ' +
-                  (err.error?.message || 'Invalid coupon');
-                setTimeout(() => this.router.navigate(['/orders']), 2200);
-              },
+                    (err.error?.message || 'Invalid coupon'),
+                  'error',
+                ),
             });
         } else {
-          finalize('Order placed successfully! 🎉');
+          navigateWithToast('Order placed successfully! 🎉', 'success');
         }
       },
       error: (err) => {

@@ -87,6 +87,88 @@
 
         <div class="cart-summary">
           <h3>Order Summary</h3>
+          <div class="address-picker">
+  <p class="suggest-title">📍 Deliver to</p>
+
+  <div *ngIf="addresses.length > 0 && !showNewAddressForm">
+    <select class="address-select" [(ngModel)]="selectedAddressId">
+      <option *ngFor="let a of addresses" [ngValue]="a.addressId">
+        {{ formatAddress(a) }}
+      </option>
+    </select>
+    <button
+      type="button"
+      class="manage-addr-btn"
+      (click)="toggleNewAddressForm()"
+    >
+      + Add another address
+    </button>
+  </div>
+
+  <div *ngIf="addresses.length === 0 && !showNewAddressForm" class="no-address">
+    <p class="no-address-msg">No saved addresses</p>
+    <button
+      type="button"
+      class="add-addr-btn"
+      (click)="toggleNewAddressForm()"
+    >
+      + Add address
+    </button>
+  </div>
+
+  <div *ngIf="showNewAddressForm" class="addr-form">
+    <input
+      type="text"
+      class="addr-input"
+      placeholder="Address line 1 *"
+      [(ngModel)]="newAddress.addressLine1"
+    />
+    <input
+      type="text"
+      class="addr-input"
+      placeholder="Address line 2 (optional)"
+      [(ngModel)]="newAddress.addressLine2"
+    />
+    <div class="addr-row">
+      <input
+        type="text"
+        class="addr-input"
+        placeholder="City *"
+        [(ngModel)]="newAddress.city"
+      />
+      <input
+        type="text"
+        class="addr-input"
+        placeholder="State *"
+        [(ngModel)]="newAddress.state"
+      />
+    </div>
+    <input
+      type="text"
+      class="addr-input"
+      placeholder="Postal code *"
+      [(ngModel)]="newAddress.postalCode"
+    />
+    <div class="addr-form-actions">
+      <button
+        type="button"
+        class="addr-cancel"
+        *ngIf="addresses.length > 0"
+        (click)="toggleNewAddressForm()"
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
+        class="addr-save"
+        [disabled]="savingAddress"
+        (click)="saveNewAddress()"
+      >
+        {{ savingAddress ? "Saving..." : "Save address" }}
+      </button>
+    </div>
+  </div>
+</div>
           <p>
             Total Items: <strong>{{ itemCount }}</strong>
           </p>
