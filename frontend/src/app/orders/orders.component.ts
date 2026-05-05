@@ -30,37 +30,47 @@ export class OrdersComponent implements OnInit {
     };
   } = {};
 
+  // { [orderId]: { addressId, addressLine1, addressLine2, city, state, postalCode } }
+  private addressByOrder: { [orderId: number]: any } = {};
+
   private readonly PRICING_KEY = 'orderPricingMap';
+  private readonly ADDRESS_KEY = 'orderAddressMap';
+  private incomingToast: { message: string; type: 'success' | 'error' } | null =
+    null;
 
   constructor(
     private customerService: CustomerService,
     private authService: AuthService,
     private router: Router,
   ) {
-    // Merge any pricing info passed from cart navigation with what's persisted.
     const nav = this.router.getCurrentNavigation();
-    const incoming = nav?.extras?.state?.['orderPricing'] || {};
+    const state = nav?.extras?.state || {};
+    const incoming = state['orderPricing'] || {};
+    this.incomingToast = state['toast'] || null;
+
     this.pricingMap = {
-      ...this.loadPersistedPricing(),
+      ...this.loadJson(this.PRICING_KEY),
       ...incoming,
     };
-    this.persistPricing();
+    this.persistJson(this.PRICING_KEY, this.pricingMap);
+
+    this.addressByOrder = this.loadJson(this.ADDRESS_KEY);
   }
 
-  private loadPersistedPricing(): any {
+  private loadJson(key: string): any {
     try {
       if (typeof sessionStorage === 'undefined') return {};
-      const raw = sessionStorage.getItem(this.PRICING_KEY);
+      const raw = sessionStorage.getItem(key);
       return raw ? JSON.parse(raw) : {};
     } catch {
       return {};
     }
   }
 
-  private persistPricing(): void {
+  private persistJson(key: string, value: any): void {
     try {
       if (typeof sessionStorage === 'undefined') return;
-      sessionStorage.setItem(this.PRICING_KEY, JSON.stringify(this.pricingMap));
+      sessionStorage.setItem(key, JSON.stringify(value));
     } catch {
       /* ignore */
     }
@@ -70,6 +80,15 @@ export class OrdersComponent implements OnInit {
     this.isLoggedIn = this.authService.isAuthenticated();
     if (this.isLoggedIn) {
       this.loadOrders();
+    }
+
+    if (this.incomingToast?.message) {
+      this.messageType = this.incomingToast.type;
+      this.message = this.incomingToast.message;
+      setTimeout(() => {
+        this.message = '';
+        this.messageType = '';
+      }, 3000);
     }
   }
 
@@ -99,6 +118,9 @@ export class OrdersComponent implements OnInit {
                 discount,
                 couponCode,
                 computedTotal: finalTotal,
+                deliveryAddress: this.formatAddress(
+                  this.addressByOrder[o.orderId],
+                ),
               };
             });
             this.loading = false;
@@ -120,6 +142,18 @@ export class OrdersComponent implements OnInit {
         });
       },
     });
+  }
+
+  formatAddress(a: any): string {
+    if (!a) return '';
+    const parts = [
+      a.addressLine1,
+      a.addressLine2,
+      a.city,
+      a.state,
+      a.postalCode,
+    ].filter((p) => p && String(p).trim().length > 0);
+    return parts.join(', ');
   }
 
   enrichOrderItems(items: any[]): any[] {

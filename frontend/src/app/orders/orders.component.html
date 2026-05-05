@@ -53,6 +53,11 @@
           </div>
 
           <div class="order-body">
+            <p class="order-address" *ngIf="order.deliveryAddress">
+              <span class="addr-icon">📍</span>
+              <span>{{ order.deliveryAddress }}</span>
+            </p>
+
             <div class="order-items" *ngIf="order.enrichedItems?.length">
               <div class="order-item-row" *ngFor="let it of order.enrichedItems">
                 <div class="oi-image">

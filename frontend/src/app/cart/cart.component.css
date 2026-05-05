@@ -503,3 +503,143 @@
   background: #ff4757;
   transform: translateY(-1px);
 }
+
+.address-picker {
+  margin-bottom: 1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px dashed #ececf0;
+}
+.address-select {
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  border: 1.5px solid #ececf0;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.88rem;
+  background: #f7f7f9;
+  color: #1a1a2e;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.address-select:focus {
+  border-color: #ff4757;
+  background: #fff;
+}
+
+.no-address {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: #fff7f5;
+  border: 1px dashed #ff4757;
+  border-radius: 10px;
+}
+.no-address-msg {
+  margin: 0 !important;
+  color: #ff4757;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.add-addr-btn {
+  padding: 0.5rem 0.9rem;
+  background: #ff4757;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.82rem;
+  transition: all 0.18s ease;
+}
+.add-addr-btn:hover {
+  background: #1a1a2e;
+}
+.manage-addr-btn {
+  margin-top: 0.4rem;
+  padding: 0;
+  background: transparent;
+  color: #6b7280;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.78rem;
+  text-decoration: underline;
+}
+.manage-addr-btn:hover {
+  color: #ff4757;
+}
+
+.addr-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: #fff7f5;
+  border: 1px dashed #ff4757;
+  border-radius: 10px;
+}
+.addr-row {
+  display: flex;
+  gap: 0.5rem;
+}
+.addr-row .addr-input {
+  flex: 1;
+  min-width: 0;
+}
+.addr-input {
+  padding: 0.55rem 0.75rem;
+  border: 1.5px solid #ececf0;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  background: #fff;
+  color: #1a1a2e;
+  outline: none;
+  transition: all 0.18s ease;
+}
+.addr-input:focus {
+  border-color: #ff4757;
+}
+.addr-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+.addr-cancel {
+  padding: 0.5rem 0.9rem;
+  background: transparent;
+  color: #6b7280;
+  border: 1px solid #ececf0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+.addr-cancel:hover {
+  color: #1a1a2e;
+  background: #fff;
+}
+.addr-save {
+  padding: 0.5rem 0.9rem;
+  background: #ff4757;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.82rem;
+  transition: all 0.18s ease;
+}
+.addr-save:hover:not(:disabled) {
+  background: #1a1a2e;
+}
+.addr-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
