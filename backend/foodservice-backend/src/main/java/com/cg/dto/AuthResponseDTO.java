@@ -6,6 +6,9 @@ public class AuthResponseDTO {
     private String email;
     private String role;
     private String message;
+    private Integer customerId;
+    private Integer userId;
+    private String name;
 
     public AuthResponseDTO() {}
 
@@ -14,6 +17,17 @@ public class AuthResponseDTO {
         this.email = email;
         this.role = role;
         this.message = message;
+    }
+
+    public AuthResponseDTO(String token, String email, String role, String message,
+                           Integer customerId, Integer userId, String name) {
+        this.token = token;
+        this.email = email;
+        this.role = role;
+        this.message = message;
+        this.customerId = customerId;
+        this.userId = userId;
+        this.name = name;
     }
 
     public String getToken() { return token; }
@@ -27,4 +41,13 @@ public class AuthResponseDTO {
 
     public String getMessage() { return message; }
     public void setMessage(String message) { this.message = message; }
+
+    public Integer getCustomerId() { return customerId; }
+    public void setCustomerId(Integer customerId) { this.customerId = customerId; }
+
+    public Integer getUserId() { return userId; }
+    public void setUserId(Integer userId) { this.userId = userId; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 }

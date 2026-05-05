@@ -60,16 +60,27 @@ public class SecurityConfig {
                 // ─── ALLOW PREFLIGHT (CRITICAL FIX) ───────────────────────
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                // ─── PUBLIC ───────────────────────────────────────────────
+                // ─── PUBLIC AUTH ──────────────────────────────────────────
                 .requestMatchers("/api/auth/**").permitAll()
 
-                // ─── RESTAURANT ───────────────────────────────────────────
+                // ─── PUBLIC BROWSE (landing page needs these) ─────────────
+                // Anonymous visitors can browse restaurants and menu items
+                // before signing up. Mutating endpoints below stay admin-only.
                 .requestMatchers(HttpMethod.GET, "/api/restaurants",
-                                                  "/api/restaurants/{id}",
-                                                  "/api/restaurants/by-menu-item/**",
-                                                  "/api/restaurants/search/**",
-                                                  "/api/restaurants/with-ratings")
-                    .hasAnyRole("CUSTOMER", "ADMIN")
+                                                 "/api/restaurants/{id}",
+                                                 "/api/restaurants/by-menu-item/**",
+                                                 "/api/restaurants/search/**",
+                                                 "/api/restaurants/with-ratings")
+                    .permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/menu-items",
+                                                 "/api/menu-items/{id}",
+                                                 "/api/menu-items/restaurant/**",
+                                                 "/api/menu-items/search/**")
+                    .permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/ratings/restaurant/*/average")
+                    .permitAll()
+
+                // ─── RESTAURANT (admin/reporting) ─────────────────────────
                 .requestMatchers(HttpMethod.GET, "/api/restaurants/with-orders",
                                                   "/api/restaurants/by-order/**",
                                                   "/api/restaurants/stats/**")
@@ -78,12 +89,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT,    "/api/restaurants/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/restaurants/**").hasRole("ADMIN")
 
-                // ─── MENU ITEMS ───────────────────────────────────────────
-                .requestMatchers(HttpMethod.GET, "/api/menu-items",
-                                                  "/api/menu-items/{id}",
-                                                  "/api/menu-items/restaurant/**",
-                                                  "/api/menu-items/search/**")
-                    .hasAnyRole("CUSTOMER", "ADMIN")
+                // ─── MENU ITEMS (admin/reporting) ─────────────────────────
                 .requestMatchers(HttpMethod.GET, "/api/menu-items/with-orders",
                                                   "/api/menu-items/by-order-item/**",
                                                   "/api/menu-items/stats/**")

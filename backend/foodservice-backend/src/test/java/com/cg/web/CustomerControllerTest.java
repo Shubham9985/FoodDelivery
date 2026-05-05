@@ -5,14 +5,19 @@ import java.util.*;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.web.servlet.SecurityFilterAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan.Filter;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -21,8 +26,24 @@ import com.cg.dto.DeliveryAddressDTO;
 import com.cg.exceptions.IdNotFoundException;
 import com.cg.service.CustomerService;
 
-@WebMvcTest(CustomerController.class)
-@AutoConfigureMockMvc
+@WebMvcTest(
+        controllers = CustomerController.class,
+        excludeFilters = @Filter(
+                type = FilterType.ASSIGNABLE_TYPE,
+                classes = {
+                        com.cg.config.SecurityConfig.class,
+                        com.cg.security.JwtAuthFilter.class,
+                        com.cg.security.CustomUserDetailsService.class
+                }
+        )
+)
+@ImportAutoConfiguration(exclude = {
+        SecurityAutoConfiguration.class,
+        SecurityFilterAutoConfiguration.class,
+        ServletWebSecurityAutoConfiguration.class,
+        UserDetailsServiceAutoConfiguration.class
+})
+@AutoConfigureMockMvc(addFilters = false)
 public class CustomerControllerTest {
 
     @Autowired
@@ -43,26 +64,24 @@ public class CustomerControllerTest {
     // ================= GET BY ID =================
 
     @Test
-    @WithMockUser
     public void testGetCustomerById_Success() throws Exception {
 
         Mockito.when(customerService.getCustomerById(Mockito.anyInt()))
                 .thenReturn(getCustomerDTO());
 
-        mockMvc.perform(get("/customers/1")
+        mockMvc.perform(get("/api/customers/1")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.customerName").value("Arpit"));
     }
 
     @Test
-    @WithMockUser
     public void testGetCustomerById_NotFound() throws Exception {
 
         Mockito.when(customerService.getCustomerById(Mockito.anyInt()))
                 .thenThrow(new IdNotFoundException("Customer not found"));
 
-        mockMvc.perform(get("/customers/2")
+        mockMvc.perform(get("/api/customers/2")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Customer not found"));
@@ -71,13 +90,12 @@ public class CustomerControllerTest {
     // ================= GET ALL =================
 
     @Test
-    @WithMockUser
     public void testGetAllCustomers() throws Exception {
 
         Mockito.when(customerService.getAllCustomers())
                 .thenReturn(List.of(getCustomerDTO()));
 
-        mockMvc.perform(get("/customers")
+        mockMvc.perform(get("/api/customers")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].customerId").value(1));
@@ -86,7 +104,6 @@ public class CustomerControllerTest {
     // ================= CREATE =================
 
     @Test
-    @WithMockUser
     public void testCreateCustomer() throws Exception {
 
         Mockito.when(customerService.createCustomer(Mockito.any(CustomerDTO.class)))
@@ -96,22 +113,21 @@ public class CustomerControllerTest {
                 {
                   "customerName":"Arpit",
                   "customerEmail":"arpit@gmail.com",
-                  "customerPhone":"9876543210"
+                  "customerPhone":"9876543210",
+                  "userId":1
                 }
                 """;
 
-        mockMvc.perform(post("/customers")
-                .with(csrf())   // important (same as Order test)
+        mockMvc.perform(post("/api/customers")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.customerEmail").value("arpit@gmail.com"));
     }
 
     // ================= UPDATE =================
 
     @Test
-    @WithMockUser
     public void testUpdateCustomer() throws Exception {
 
         CustomerDTO updated = getCustomerDTO();
@@ -124,12 +140,12 @@ public class CustomerControllerTest {
                 {
                   "customerName":"Updated",
                   "customerEmail":"arpit@gmail.com",
-                  "customerPhone":"9876543210"
+                  "customerPhone":"9876543210",
+                  "userId":1
                 }
                 """;
 
-        mockMvc.perform(put("/customers/1")
-                .with(csrf())
+        mockMvc.perform(put("/api/customers/1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
                 .andExpect(status().isOk())
@@ -139,13 +155,11 @@ public class CustomerControllerTest {
     // ================= DELETE =================
 
     @Test
-    @WithMockUser
     public void testDeleteCustomer() throws Exception {
 
         Mockito.doNothing().when(customerService).deleteCustomer(Mockito.anyInt());
 
-        mockMvc.perform(delete("/customers/1")
-                .with(csrf()))
+        mockMvc.perform(delete("/api/customers/1"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Customer deleted successfully"));
     }
@@ -153,7 +167,6 @@ public class CustomerControllerTest {
     // ================= GET ADDRESSES =================
 
     @Test
-    @WithMockUser
     public void testGetCustomerAddresses() throws Exception {
 
         DeliveryAddressDTO address = new DeliveryAddressDTO();
@@ -163,7 +176,7 @@ public class CustomerControllerTest {
         Mockito.when(customerService.getCustomerAddresses(Mockito.anyInt()))
                 .thenReturn(Set.of(address));
 
-        mockMvc.perform(get("/customers/1/addresses")
+        mockMvc.perform(get("/api/customers/1/addresses")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].city").value("Delhi"));

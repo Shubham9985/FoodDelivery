@@ -59,13 +59,15 @@ public class AuthServiceImpl implements AuthService {
 
         user = userRepo.save(user);
 
+        Integer customerId = null;
         if (role == Role.CUSTOMER) {
             Customer customer = new Customer();
             customer.setCustomerName(dto.getName());
             customer.setCustomerEmail(dto.getEmail());
             customer.setCustomerPhone(dto.getPhone());
             customer.setUser(user);
-            customerRepo.save(customer);
+            customer = customerRepo.save(customer);
+            customerId = customer.getCustomerId();
         }
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
@@ -75,7 +77,10 @@ public class AuthServiceImpl implements AuthService {
                 user.getEmail(),
                 user.getRole().name(),
                 role == Role.CUSTOMER ? "Customer registered successfully"
-                                      : "Admin registered successfully");
+                                      : "Admin registered successfully",
+                customerId,
+                user.getUserId(),
+                user.getName());
     }
 
     @Override
@@ -96,6 +101,22 @@ public class AuthServiceImpl implements AuthService {
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
 
-        return new AuthResponseDTO(token, user.getEmail(), user.getRole().name(), "Login successful");
+        // Look up the linked customer (if this user is a customer) so the
+        // frontend can route profile / cart / order endpoints correctly.
+        Integer customerId = null;
+        if (user.getRole() == Role.CUSTOMER) {
+            customerId = customerRepo.findByUser_UserId(user.getUserId())
+                    .map(Customer::getCustomerId)
+                    .orElse(null);
+        }
+
+        return new AuthResponseDTO(
+                token,
+                user.getEmail(),
+                user.getRole().name(),
+                "Login successful",
+                customerId,
+                user.getUserId(),
+                user.getName());
     }
 }

@@ -1,14 +1,21 @@
 package com.cg.web;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.web.servlet.SecurityFilterAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan.Filter;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -19,8 +26,24 @@ import com.cg.service.MenuItemsService;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+@WebMvcTest(
+        controllers = MenuItemsController.class,
+        excludeFilters = @Filter(
+                type = FilterType.ASSIGNABLE_TYPE,
+                classes = {
+                        com.cg.config.SecurityConfig.class,
+                        com.cg.security.JwtAuthFilter.class,
+                        com.cg.security.CustomUserDetailsService.class
+                }
+        )
+)
+@ImportAutoConfiguration(exclude = {
+        SecurityAutoConfiguration.class,
+        SecurityFilterAutoConfiguration.class,
+        ServletWebSecurityAutoConfiguration.class,
+        UserDetailsServiceAutoConfiguration.class
+})
+@AutoConfigureMockMvc(addFilters = false)
 public class MenuItemsControllerTest {
 
     @Autowired
@@ -29,16 +52,21 @@ public class MenuItemsControllerTest {
     @MockitoBean
     private MenuItemsService menuItemsService;
 
-    // 🔹 Helper
+    // 🔹 Helper — MenuItemsDTO.Response only has a no-arg constructor + setters
     private MenuItemsDTO.Response getItem() {
-        return new MenuItemsDTO.Response(
-                1, "Pizza", "Cheese", 200.0, 1, "Pizza Palace", null
-        );
+        MenuItemsDTO.Response dto = new MenuItemsDTO.Response();
+        dto.setItemId(1);
+        dto.setItemName("Pizza");
+        dto.setItemDescription("Cheese");
+        dto.setItemPrice(new BigDecimal("200.00"));
+        dto.setRestaurantId(1);
+        dto.setRestaurantName("Pizza Palace");
+        dto.setItemImageUrl(null);
+        return dto;
     }
 
     // ✅ CREATE
     @Test
-    @WithMockUser
     public void testAddMenuItem() throws Exception {
 
         Mockito.when(menuItemsService.addMenuItem(Mockito.any()))
@@ -48,7 +76,7 @@ public class MenuItemsControllerTest {
                 {
                   "itemName":"Pizza",
                   "itemDescription":"Cheese",
-                  "itemPrice":200,
+                  "itemPrice":200.00,
                   "restaurantId":1
                 }
                 """;
@@ -62,7 +90,6 @@ public class MenuItemsControllerTest {
 
     // ✅ GET ALL
     @Test
-    @WithMockUser
     public void testGetAllMenuItems() throws Exception {
 
         Mockito.when(menuItemsService.getAllMenuItems())
@@ -75,7 +102,6 @@ public class MenuItemsControllerTest {
 
     // ✅ GET BY ID (SUCCESS)
     @Test
-    @WithMockUser
     public void testGetMenuItemById_Success() throws Exception {
 
         Mockito.when(menuItemsService.getMenuItemById(1))
@@ -88,7 +114,6 @@ public class MenuItemsControllerTest {
 
     // ❌ GET BY ID (NOT FOUND)
     @Test
-    @WithMockUser
     public void testGetMenuItemById_NotFound() throws Exception {
 
         Mockito.when(menuItemsService.getMenuItemById(99))
@@ -101,7 +126,6 @@ public class MenuItemsControllerTest {
 
     // ✅ DELETE
     @Test
-    @WithMockUser
     public void testDeleteMenuItem() throws Exception {
 
         Mockito.doNothing().when(menuItemsService).deleteMenuItem(1);
@@ -112,7 +136,6 @@ public class MenuItemsControllerTest {
 
     // ✅ SEARCH BY NAME
     @Test
-    @WithMockUser
     public void testGetMenuItemByName() throws Exception {
 
         Mockito.when(menuItemsService.getMenuItemByName("Pizza"))
