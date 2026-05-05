@@ -5,10 +5,16 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.web.servlet.SecurityFilterAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan.Filter;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -19,8 +25,24 @@ import com.cg.service.RestaurantService;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+@WebMvcTest(
+        controllers = RestaurantController.class,
+        excludeFilters = @Filter(
+                type = FilterType.ASSIGNABLE_TYPE,
+                classes = {
+                        com.cg.config.SecurityConfig.class,
+                        com.cg.security.JwtAuthFilter.class,
+                        com.cg.security.CustomUserDetailsService.class
+                }
+        )
+)
+@ImportAutoConfiguration(exclude = {
+        SecurityAutoConfiguration.class,
+        SecurityFilterAutoConfiguration.class,
+        ServletWebSecurityAutoConfiguration.class,
+        UserDetailsServiceAutoConfiguration.class
+})
+@AutoConfigureMockMvc(addFilters = false)
 public class RestaurantControllerTest {
 
     @Autowired
@@ -38,7 +60,6 @@ public class RestaurantControllerTest {
 
     // ✅ CREATE
     @Test
-    @WithMockUser
     public void testAddRestaurant() throws Exception {
 
         Mockito.when(restaurantService.addRestaurant(Mockito.any()))
@@ -46,7 +67,6 @@ public class RestaurantControllerTest {
 
         String json = """
                 {
-                  "restaurantId":1,
                   "restaurantName":"Pizza Palace",
                   "restaurantAddress":"Delhi",
                   "restaurantPhone":"9876543210"
@@ -62,7 +82,6 @@ public class RestaurantControllerTest {
 
     // ✅ GET ALL
     @Test
-    @WithMockUser
     public void testGetAllRestaurants() throws Exception {
 
         Mockito.when(restaurantService.getAllRestaurants())
@@ -75,7 +94,6 @@ public class RestaurantControllerTest {
 
     // ✅ GET BY ID (SUCCESS)
     @Test
-    @WithMockUser
     public void testGetRestaurantById_Success() throws Exception {
 
         Mockito.when(restaurantService.getRestaurantById(1))
@@ -88,7 +106,6 @@ public class RestaurantControllerTest {
 
     // ❌ GET BY ID (NOT FOUND)
     @Test
-    @WithMockUser
     public void testGetRestaurantById_NotFound() throws Exception {
 
         Mockito.when(restaurantService.getRestaurantById(99))
@@ -101,7 +118,6 @@ public class RestaurantControllerTest {
 
     // ✅ DELETE
     @Test
-    @WithMockUser
     public void testDeleteRestaurant() throws Exception {
 
         Mockito.doNothing().when(restaurantService).deleteRestaurant(1);
@@ -112,7 +128,6 @@ public class RestaurantControllerTest {
 
     // ✅ SEARCH BY PHONE
     @Test
-    @WithMockUser
     public void testGetRestaurantByPhone() throws Exception {
 
         Mockito.when(restaurantService.getRestaurantByPhone("9876543210"))

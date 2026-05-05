@@ -6,11 +6,17 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.web.servlet.SecurityFilterAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan.Filter;
+import org.springframework.context.annotation.FilterType;
 
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -22,7 +28,23 @@ import com.cg.dto.DeliveryAddressDTO;
 import com.cg.exceptions.IdNotFoundException;
 import com.cg.service.DeliveryAddressService;
 
-@WebMvcTest(DeliveryAddressController.class)
+@WebMvcTest(
+        controllers = DeliveryAddressController.class,
+        excludeFilters = @Filter(
+                type = FilterType.ASSIGNABLE_TYPE,
+                classes = {
+                        com.cg.config.SecurityConfig.class,
+                        com.cg.security.JwtAuthFilter.class,
+                        com.cg.security.CustomUserDetailsService.class
+                }
+        )
+)
+@ImportAutoConfiguration(exclude = {
+        SecurityAutoConfiguration.class,
+        SecurityFilterAutoConfiguration.class,
+        ServletWebSecurityAutoConfiguration.class,
+        UserDetailsServiceAutoConfiguration.class
+})
 @AutoConfigureMockMvc(addFilters = false)
 public class DeliveryAddressControllerTest {
 
@@ -50,7 +72,6 @@ public class DeliveryAddressControllerTest {
     // ---------------- CREATE POSITIVE ----------------
 
     @Test
-    @WithMockUser
     public void testCreateAddress() throws Exception {
 
         Mockito.when(addressService.createAddress(
@@ -68,17 +89,16 @@ public class DeliveryAddressControllerTest {
             }
             """;
 
-        mockMvc.perform(post("/addresses")
+        mockMvc.perform(post("/api/addresses")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.city").value("Gotham"));
     }
 
     // ---------------- CREATE NEGATIVE ----------------
 
     @Test
-    @WithMockUser
     public void testCreateAddress_NotFound() throws Exception {
 
         Mockito.when(addressService.createAddress(
@@ -96,7 +116,7 @@ public class DeliveryAddressControllerTest {
             }
             """;
 
-        mockMvc.perform(post("/addresses")
+        mockMvc.perform(post("/api/addresses")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
                 .andExpect(status().isNotFound());
@@ -105,13 +125,12 @@ public class DeliveryAddressControllerTest {
     // ---------------- GET ALL POSITIVE ----------------
 
     @Test
-    @WithMockUser
     public void testGetAllAddresses() throws Exception {
 
         Mockito.when(addressService.getAllAddresses())
                 .thenReturn(List.of(getAddressDTO()));
 
-        mockMvc.perform(get("/addresses"))
+        mockMvc.perform(get("/api/addresses"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].city").value("Gotham"));
     }
@@ -119,13 +138,12 @@ public class DeliveryAddressControllerTest {
     // ---------------- GET BY ID POSITIVE ----------------
 
     @Test
-    @WithMockUser
     public void testGetAddressById() throws Exception {
 
         Mockito.when(addressService.getAddressById(1))
                 .thenReturn(getAddressDTO());
 
-        mockMvc.perform(get("/addresses/1"))
+        mockMvc.perform(get("/api/addresses/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.addressId").value(1));
     }
@@ -133,20 +151,18 @@ public class DeliveryAddressControllerTest {
     // ---------------- GET BY ID NEGATIVE ----------------
 
     @Test
-    @WithMockUser
     public void testGetAddressById_NotFound() throws Exception {
 
         Mockito.when(addressService.getAddressById(99))
                 .thenThrow(new IdNotFoundException("Address not found"));
 
-        mockMvc.perform(get("/addresses/99"))
+        mockMvc.perform(get("/api/addresses/99"))
                 .andExpect(status().isNotFound());
     }
 
     // ---------------- UPDATE POSITIVE ----------------
 
     @Test
-    @WithMockUser
     public void testUpdateAddress() throws Exception {
 
         DeliveryAddressDTO dto = getAddressDTO();
@@ -168,7 +184,7 @@ public class DeliveryAddressControllerTest {
             }
             """;
 
-        mockMvc.perform(put("/addresses/1")
+        mockMvc.perform(put("/api/addresses/1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
                 .andExpect(status().isOk())
@@ -178,7 +194,6 @@ public class DeliveryAddressControllerTest {
     // ---------------- UPDATE NEGATIVE ----------------
 
     @Test
-    @WithMockUser
     public void testUpdateAddress_NotFound() throws Exception {
 
         Mockito.when(addressService.updateAddress(
@@ -192,11 +207,12 @@ public class DeliveryAddressControllerTest {
               "addressLine2":"Haven Street",
               "city":"Gotham",
               "state":"New York",
-              "postalCode":"123456"
+              "postalCode":"123456",
+              "customerId":101
             }
             """;
 
-        mockMvc.perform(put("/addresses/99")
+        mockMvc.perform(put("/api/addresses/99")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
                 .andExpect(status().isNotFound());
@@ -205,14 +221,13 @@ public class DeliveryAddressControllerTest {
     // ---------------- DELETE POSITIVE ----------------
 
     @Test
-    @WithMockUser
     public void testDeleteAddress() throws Exception {
 
         Mockito.doNothing()
                 .when(addressService)
                 .deleteAddress(1);
 
-        mockMvc.perform(delete("/addresses/1"))
+        mockMvc.perform(delete("/api/addresses/1"))
                 .andExpect(status().isOk())
                 .andExpect(content()
                 .string("Address deleted successfully"));
@@ -221,27 +236,25 @@ public class DeliveryAddressControllerTest {
     // ---------------- DELETE NEGATIVE ----------------
 
     @Test
-    @WithMockUser
     public void testDeleteAddress_NotFound() throws Exception {
 
         Mockito.doThrow(new IdNotFoundException("Address not found"))
                 .when(addressService)
                 .deleteAddress(99);
 
-        mockMvc.perform(delete("/addresses/99"))
+        mockMvc.perform(delete("/api/addresses/99"))
                 .andExpect(status().isNotFound());
     }
 
     // ---------------- GET BY CUSTOMER POSITIVE ----------------
 
     @Test
-    @WithMockUser
     public void testGetByCustomer() throws Exception {
 
         Mockito.when(addressService.getAddressesByCustomer(101))
                 .thenReturn(List.of(getAddressDTO()));
 
-        mockMvc.perform(get("/addresses/customer/101"))
+        mockMvc.perform(get("/api/addresses/customer/101"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].customerId").value(101));
     }
@@ -249,26 +262,24 @@ public class DeliveryAddressControllerTest {
     // ---------------- GET BY CUSTOMER NEGATIVE ----------------
 
     @Test
-    @WithMockUser
     public void testGetByCustomer_NotFound() throws Exception {
 
         Mockito.when(addressService.getAddressesByCustomer(999))
                 .thenThrow(new IdNotFoundException("Customer not found"));
 
-        mockMvc.perform(get("/addresses/customer/999"))
+        mockMvc.perform(get("/api/addresses/customer/999"))
                 .andExpect(status().isNotFound());
     }
-    
+
     // ---------------- ASSIGN CUSTOMER POSITIVE ----------------
 
     @Test
-    @WithMockUser
     public void testAssignCustomer() throws Exception {
 
         Mockito.when(addressService.assignToCustomer(1, 101))
                 .thenReturn(getAddressDTO());
 
-        mockMvc.perform(post("/addresses/1/assign/101"))
+        mockMvc.perform(put("/api/addresses/1/assign/101"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.customerId").value(101));
     }
@@ -276,13 +287,12 @@ public class DeliveryAddressControllerTest {
     // ---------------- ASSIGN CUSTOMER NEGATIVE ----------------
 
     @Test
-    @WithMockUser
     public void testAssignCustomer_NotFound() throws Exception {
 
         Mockito.when(addressService.assignToCustomer(99, 101))
                 .thenThrow(new IdNotFoundException("Address not found"));
 
-        mockMvc.perform(post("/addresses/99/assign/101"))
+        mockMvc.perform(put("/api/addresses/99/assign/101"))
                 .andExpect(status().isNotFound());
     }
 }

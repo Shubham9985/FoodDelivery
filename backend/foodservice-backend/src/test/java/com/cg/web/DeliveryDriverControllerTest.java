@@ -5,14 +5,19 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.web.servlet.SecurityFilterAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan.Filter;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -20,8 +25,24 @@ import com.cg.dto.DeliveryDriverDTO;
 import com.cg.exceptions.IdNotFoundException;
 import com.cg.service.DeliveryDriverService;
 
-@WebMvcTest(DeliveryDriverController.class)
-@AutoConfigureMockMvc
+@WebMvcTest(
+        controllers = DeliveryDriverController.class,
+        excludeFilters = @Filter(
+                type = FilterType.ASSIGNABLE_TYPE,
+                classes = {
+                        com.cg.config.SecurityConfig.class,
+                        com.cg.security.JwtAuthFilter.class,
+                        com.cg.security.CustomUserDetailsService.class
+                }
+        )
+)
+@ImportAutoConfiguration(exclude = {
+        SecurityAutoConfiguration.class,
+        SecurityFilterAutoConfiguration.class,
+        ServletWebSecurityAutoConfiguration.class,
+        UserDetailsServiceAutoConfiguration.class
+})
+@AutoConfigureMockMvc(addFilters = false)
 public class DeliveryDriverControllerTest {
 
     @Autowired
@@ -42,7 +63,6 @@ public class DeliveryDriverControllerTest {
     // ================= CREATE =================
 
     @Test
-    @WithMockUser
     public void testCreateDriver() throws Exception {
 
         Mockito.when(driverService.createDriver(Mockito.any(DeliveryDriverDTO.class)))
@@ -56,24 +76,22 @@ public class DeliveryDriverControllerTest {
                 }
                 """;
 
-        mockMvc.perform(post("/drivers")
-                .with(csrf())
+        mockMvc.perform(post("/api/drivers")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.driverName").value("Rahul"));
     }
 
     // ================= GET ALL =================
 
     @Test
-    @WithMockUser
     public void testGetAllDrivers() throws Exception {
 
         Mockito.when(driverService.getAllDrivers())
                 .thenReturn(List.of(mockDriver()));
 
-        mockMvc.perform(get("/drivers")
+        mockMvc.perform(get("/api/drivers")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].driverId").value(1));
@@ -82,26 +100,24 @@ public class DeliveryDriverControllerTest {
     // ================= GET BY ID =================
 
     @Test
-    @WithMockUser
     public void testGetDriverById_Success() throws Exception {
 
         Mockito.when(driverService.getDriverById(Mockito.anyInt()))
                 .thenReturn(mockDriver());
 
-        mockMvc.perform(get("/drivers/1")
+        mockMvc.perform(get("/api/drivers/1")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.driverName").value("Rahul"));
     }
 
     @Test
-    @WithMockUser
     public void testGetDriverById_NotFound() throws Exception {
 
         Mockito.when(driverService.getDriverById(Mockito.anyInt()))
                 .thenThrow(new IdNotFoundException("Driver not found"));
 
-        mockMvc.perform(get("/drivers/2")
+        mockMvc.perform(get("/api/drivers/2")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Driver not found"));
@@ -110,7 +126,6 @@ public class DeliveryDriverControllerTest {
     // ================= UPDATE =================
 
     @Test
-    @WithMockUser
     public void testUpdateDriver() throws Exception {
 
         DeliveryDriverDTO updated = mockDriver();
@@ -127,8 +142,7 @@ public class DeliveryDriverControllerTest {
                 }
                 """;
 
-        mockMvc.perform(put("/drivers/1")
-                .with(csrf())
+        mockMvc.perform(put("/api/drivers/1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
                 .andExpect(status().isOk())
@@ -138,13 +152,11 @@ public class DeliveryDriverControllerTest {
     // ================= DELETE =================
 
     @Test
-    @WithMockUser
     public void testDeleteDriver() throws Exception {
 
         Mockito.doNothing().when(driverService).deleteDriver(Mockito.anyInt());
 
-        mockMvc.perform(delete("/drivers/1")
-                .with(csrf()))
+        mockMvc.perform(delete("/api/drivers/1"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Driver deleted successfully"));
     }
